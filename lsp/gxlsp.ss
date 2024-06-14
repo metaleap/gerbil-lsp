@@ -12,7 +12,6 @@
         :std/logger
         :std/contract
         :std/os/socket
-        :std/text/utf8
         :std/text/json
         :std/net/json-rpc
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
@@ -37,7 +36,6 @@
 (def +output-buffer-size+ (expt 2 15))
 
 (def +handlers+           (make-hash-table))
-;; TODO: Buffer re-use?
 
 ;;;
 ;;; Misc
@@ -75,15 +73,14 @@
   final: #t)
 (defstruct lsp-response (buf sock json)
   final: #t)
-(defstruct lsp-client-s (processId client-name client-version locale rootPath
-                                   rootUri initializationOptions capabilities
-                                   trace workspaceFolders
-                                   initialized) ;; Is the client initialized?
+(defstruct lsp-client-s ( client-name client-version ;; obtained from InitializeParams
+                          initializationOptions capabilities workspaceFolders ;; dito
+                          initialized) ;; set on receipt of the Initialized notification
   final: #t)
 
 ;; gxlsp is a single-client server.
 ;; Launch multiple processes if needed.
-(def +lsp-client+ (make-lsp-client-s #f #f #f #f #f #f #f #f #f #f #f))
+(def +lsp-client+ (make-lsp-client-s #f #f #f #f #f #f))
 
 ;; Main entry point.
 ;; sock <- StreamSocket
@@ -109,7 +106,7 @@
             (serve-json-rpc! res lsp-processor req.json)
             ;; Only respond to Requests, but not Notifications
             (if (hash-get req.json "id")
-              (write-response! res)))
+              (write-response! res))
           (catch (e)
             (errorf "=== exception raised in lsp-server ~a" e)
             (internal-error e))
@@ -118,7 +115,7 @@
             (set! req.json #f)
             (set! res.json #f)
             (&BufferedReader-reset! req.buf (sock.reader) #f)
-            (&BufferedWriter-reset! res.buf (sock.writer) #f)))))))
+            (&BufferedWriter-reset! res.buf (sock.writer) #f))))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
 ;; res <- lsp-response
@@ -150,7 +147,6 @@
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  ;; TODO: Handle closes
   (using ((res :- lsp-response)
           (obuf res.buf :- BufferedWriter))
     (let ((out (json-object->bytes res.json)))
@@ -200,23 +196,18 @@
       (initialize-server params))))
 
 ;; A client should complete initialization by sending an 'initialized' Notification.
-;; But do we actually want to check this? Not sure how important it is.
+;; For us, this is a no-op.
 (defhandler "initialized"
   (lambda (params)
-    ;; No need to return a response as it's a Notification
     (lsp-client-s-initialized-set! +lsp-client+ #t)))
-
-;; TODO: Add more handlers!
 
 (def (pre-init-handler method params)
   (debugf "=== pre-init-handler")
   ;; Notifications are dropped at the JSON-RPC layer
-  ;; TODO: Handle shutdown & exit
   (if (equal? "initialize" method)
     ((method-handler "initialize") params)
     (json-rpc-error code: -32002 data: (void) message: "Server is not initialized.")))
 
-;; TODO: Properly do this - need to read the spec
 (def (initialize-server params)
   (debugf "=== initialize-server")
   ;; Just crash on void params
@@ -228,13 +219,8 @@
          (when .$clientInfo
            (set! lsp-client.client-name    (hash-get .$clientInfo "name"))
            (set! lsp-client.client-version (hash-get .$clientInfo "version")))
-         (set! lsp-client.processId             .$processId)
-         (set! lsp-client.locale                .$locale)
-         (set! lsp-client.rootPath              .$rootPath)
-         (set! lsp-client.rootUri               .$rootUri)
          (set! lsp-client.initializationOptions .$initializationOptions)
          (set! lsp-client.capabilities          .$capabilities)
-         (set! lsp-client.trace                 .$trace)
          (set! lsp-client.workspaceFolders      .$workspaceFolders)
          (let (capabilities (generate-capabilities params))
            (set! +initialized+ #t)
@@ -245,8 +231,11 @@
          (raise e))))))
 
 (def (generate-capabilities params)
-  ;; TODO: What minimum set of features do we support?
-  (InitializeResult (hash ("positionEncoding" "utf-8")) +server-info+))
+  (InitializeResult (hash
+                      ("positionEncoding" "utf-16")
+                      ("workspace" (hash ("workspaceFolders" (hash ("supported" #t)))))
+                      ("hoverProvider" #t)
+                    ) +server-info+))
 
 ;;; CLI
 
