@@ -3,5 +3,5 @@
 (import :std/build-script)
 
 (defbuild-script
-  '("lsp/lib"
+  '("lsp/std_ide_lsp/gerbil/gxlsp" "lsp/std_ide_lsp/server" "lsp/std_ide_lsp/codegen"
     (exe: "lsp/main" bin: "lsp")))
