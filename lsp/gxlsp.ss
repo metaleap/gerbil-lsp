@@ -100,27 +100,25 @@
               (res :- lsp-response))
         (sock.set-input-timeout! +request-timeout+)
         (sock.set-output-timeout! +response-timeout+)
-        (try
-          (while #t
+        (def ok #t)
+        (while ok ; break out on socket-disconnected or incoming non-JSON payload (ie. not an LSP client)
+          (try
             ;; Buffered IO from sock to req
-            (read-request! req)
+            (set! ok (read-request! req))
             ;; Try to handle the Notification/Request
             (serve-json-rpc! res lsp-processor req.json)
-            ;; Only respond to Requests, but not Notifications.
+            ;; Only respond to Requests, but not Notifications
             (if (hash-get req.json "id")
-              (write-response! res))
+              (write-response! res)))
+          (catch (e)
+            (errorf "=== exception raised in lsp-server ~a" e)
+            (internal-error e))
+          (finally
             ;; Reset the buffers but don't close the socket
             (set! req.json #f)
             (set! res.json #f)
             (&BufferedReader-reset! req.buf (sock.reader) #f)
-            (&BufferedWriter-reset! res.buf (sock.writer) #f))
-        (catch (e)
-          (errorf "=== exception raised in lsp-server ~a" e)
-          (internal-error e))
-        (finally
-        ;; TODO: Global buffer re-use, currently useless as these will be GCd
-        (&BufferedReader-reset! req.buf (sock.reader))
-        (&BufferedWriter-reset! res.buf (sock.writer))))))))
+            (&BufferedWriter-reset! res.buf (sock.writer) #f)))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
 ;; res <- lsp-response
@@ -139,10 +137,12 @@
             (headers (read-request-headers ibuf))
             (json (bytes->json (read-request-body ibuf headers))))
        (debugf "=== Request ~a" (json-object->string json))
-       (set! req.json json))
+       (set! req.json json)
+       #t)
      (catch (e)
        (debugf "Exception raised in read-request!: ~a" e)
-       (internal-error e)))))
+       (internal-error e)
+       #f))))
 
 ;; Buffered IO on the socket
 ;; res <- lsp-response
@@ -150,7 +150,6 @@
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  (debugf "=== handle-request!")
   ;; TODO: Handle closes
   (using ((res :- lsp-response)
           (obuf res.buf :- BufferedWriter))
@@ -163,7 +162,6 @@
       (write-crlf obuf)
       ;; Body
       (obuf.write (json-object->bytes res.json))
-      (write-crlf obuf)
       (obuf.flush))))
 
 ;; See :std/net/json-rpc
