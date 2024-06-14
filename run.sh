@@ -1,2 +1,1 @@
-gerbil build
-gerbil env lsp $@
+gerbil build && gerbil env gxlsp --loglevel 4
