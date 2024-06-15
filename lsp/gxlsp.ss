@@ -64,17 +64,17 @@
 ; If users ever really request it, further impls could include pipes or client-socket
 ; (where LSP client is the listener) or a more refined / multi-client server-socket.
 
-(defstruct Transport ((reader : Reader) (writer : Writer)) final: #t)
+(defstruct Transport ((reader : BufferedReader) (writer : BufferedWriter)) final: #t)
 (def (transport-stdio)
-  (make-Transport (Reader (make-raw-binary-input-port (current-input-port)))
-                  (Writer (make-raw-binary-output-port (current-output-port)))))
+  (make-Transport (open-buffered-reader (current-input-port))
+                  (open-buffered-writer (current-output-port))))
 (def (transport-server-socket addr-and-port)
   (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
           (sock (srv.accept) :- StreamSocket))
             (sock.set-input-timeout! +request-timeout+)
             (sock.set-output-timeout! +response-timeout+)
-            (make-Transport (StreamSocket-reader sock)
-                            (StreamSocket-writer sock))))
+            (make-Transport (open-buffered-reader (StreamSocket-reader sock))
+                            (open-buffered-writer (StreamSocket-writer sock)))))
 
 ;; Start the server.
 (def (start! addr-and-port)
@@ -86,7 +86,7 @@
   ; (lsp-server (transport-server-socket addr-and-port)))
 
 ;; Structures for handling state
-(defstruct LspReqResp (buf (transport : Transport) json)
+(defstruct LspReqResp ((transport : Transport) json)
   final: #t)
 (defstruct LspClient (  client-name client-version ;; obtained from InitializeParams
                         initializationOptions capabilities workspaceFolders ;; dito
@@ -101,10 +101,8 @@
 ;; Processes requests through `handle-request!`.
 (def (lsp-server (transport : Transport))
   (debugf "=== lsp-server")
-  (def ibuf (open-buffered-reader transport.reader +input-buffer-size+))
-  (def obuf (open-buffered-writer transport.writer +output-buffer-size+))
-  (let ((req (make-LspReqResp ibuf transport #f))
-        (res (make-LspReqResp obuf transport #f)))
+  (let ((req (make-LspReqResp transport #f))
+        (res (make-LspReqResp transport #f)))
     (using ((req :- LspReqResp)
             (res :- LspReqResp))
       (def ok #t)
@@ -120,13 +118,7 @@
           (errorf "=== exception raised in lsp-server ~a" e)
           (internal-error e))
         (finally
-          ;; Reset the buffers but don't close the transport
-          (set! req.json #f)
-          (set! res.json #f)
-          (displayln ">>>RESET-REQ") (thread-yield!)
-          (&BufferedReader-reset! req.buf transport.reader #f)
-          (displayln ">>>RESET-RESP") (thread-yield!)
-          (&BufferedWriter-reset! res.buf transport.writer #f)           (displayln ">>>RESET-DONE") (thread-yield!) ))))))
+          (set! req.json #f) (set! res.json #f)))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
 ;; res <- LspReqResp
@@ -139,12 +131,12 @@
 (def (read-request! (req : LspReqResp))
   (debugf "=== read-request!")
   (try
-    (let* ((ibuf req.buf)
-          (headers (read-request-headers ibuf))
-          (json (bytes->json (read-request-body ibuf headers))))
-      (debugf "=== Request ~a" (json-object->string json))
-      (set! req.json json)
-      #t)
+    (using ((ibuf (Transport-reader req.transport) :- BufferedReader))
+      (let* ( (headers (read-request-headers ibuf))
+              (json (bytes->json (read-request-body ibuf headers))))
+                (debugf "=== Request ~a" (json-object->string json))
+                (set! req.json json)
+                #t))
     (catch (e)
       (debugf "Exception raised in read-request!: ~a" e)
       (internal-error e)
@@ -156,7 +148,7 @@
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  (using ((obuf res.buf :- BufferedWriter))
+  (using ((obuf (Transport-writer res.transport) :- BufferedWriter))
     (let ((out (json-object->bytes res.json)))
       (debugf "=== Response ~a" (bytes->string out))
       ;; Headers
