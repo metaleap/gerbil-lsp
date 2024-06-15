@@ -66,8 +66,8 @@
 
 (defstruct Transport (reader writer) final: #t)
 (def (transport-stdio)
-  (make-Transport (Reader (make-raw-binary-input-port (current-input-port)))
-                  (Writer (make-raw-binary-output-port (current-output-port)))))
+  (make-Transport (reader: (Reader (make-raw-binary-input-port (current-input-port))))
+                  (writer: (Writer (make-raw-binary-output-port (current-output-port))))))
 (def (transport-server-socket addr-and-port)
   (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
           (sock (srv.accept) :- StreamSocket))
@@ -81,8 +81,8 @@
   (start-logger!)
   (infof "Gerbil LSP started...")
   ; TODO: transport choice via CLI arg!
-  ; (lsp-server (transport-stdio)))
-  (lsp-server (transport-server-socket addr-and-port)))
+  (lsp-server (transport-stdio)))
+  ; (lsp-server (transport-server-socket addr-and-port)))
 
 ;; Structures for handling state
 (defstruct LspReqResp (buf transport json)
