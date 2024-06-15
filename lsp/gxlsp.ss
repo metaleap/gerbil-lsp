@@ -8,6 +8,7 @@
         :std/io/dummy
         :std/error
         :std/actor
+        :std/interface
         :std/sugar
         :std/logger
         :std/contract
@@ -57,50 +58,62 @@
 ;;; Server API
 ;;;
 
+
+; Multiple transports: currently implemented below are stdio and server-socket
+; (the latter single-client and blocking-while-listening-until-accept).
+; If users ever really request it, further impls could include pipes or client-socket
+; (where LSP client is the listener) or a more refined / multi-client server-socket.
+
+(defstruct Transport (reader writer) final: #t)
+(def (transport-stdio)
+  (make-Transport (Reader (make-raw-binary-input-port (current-input-port)))
+                  (Writer (make-raw-binary-output-port (current-output-port)))))
+(def (transport-server-socket addr-and-port)
+  (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
+          (sock (srv.accept) :- StreamSocket))
+            (sock.set-input-timeout! +request-timeout+)
+            (sock.set-output-timeout! +response-timeout+)
+            (make-Transport (StreamSocket-reader sock)
+                            (StreamSocket-writer sock))))
+
 ;; Start the server.
-;; local <- "address:port"
-(def (start! local)
+(def (start! addr-and-port)
   (start-logger!)
-  (infof "Gerbil LSP started, listening...")
-  ;; Allow reconnects?
-  (using ((srv (tcp-listen local) :- ServerSocket)
-          (clisock (srv.accept) :- StreamSocket))
-    (infof "Accepted connection from ~a" (clisock.peer-address))
-    (lsp-server clisock)))
+  (infof "Gerbil LSP started...")
+  ; TODO: transport choice via CLI arg. for now, default to stdio:
+  (lsp-server (transport-stdio)))
 
 ;; Structures for handling state
-(defstruct lsp-request (buf sock json)
+(defstruct LspReqResp (buf transport json)
   final: #t)
-(defstruct lsp-response (buf sock json)
-  final: #t)
-(defstruct lsp-client-s ( client-name client-version ;; obtained from InitializeParams
-                          initializationOptions capabilities workspaceFolders ;; dito
-                          initialized) ;; set on receipt of the Initialized notification
+(defstruct LspClient (  client-name client-version ;; obtained from InitializeParams
+                        initializationOptions capabilities workspaceFolders ;; dito
+                        initialized) ;; set on receipt of the Initialized notification
   final: #t)
 
-;; gxlsp is a single-client server.
-;; Launch multiple processes if needed.
-(def +lsp-client+ (make-lsp-client-s #f #f #f #f #f #f))
+;; gxlsp is a single-client server so far.
+(def +lsp-client+ (make-LspClient #f #f #f #f #f #f))
 
 ;; Main entry point.
-;; sock <- StreamSocket
-;; Creates new BufferedR/Writer with StreamSocket semantics.
-;; Processes requests through 'handle-request!.
-(def (lsp-server sock)
+;; transport <- Transport
+;; Processes requests through `handle-request!`.
+(def (lsp-server transport)
   (debugf "=== lsp-server")
-  (using (sock :- StreamSocket)
-    (def ibuf (open-buffered-reader (sock.reader) +input-buffer-size+))
-    (def obuf (open-buffered-writer (sock.writer) +output-buffer-size+))
-    (let ((req (make-lsp-request ibuf sock #f))
-          (res (make-lsp-response obuf sock #f)))
-      (using ((req :- lsp-request)
-              (res :- lsp-response))
-        (sock.set-input-timeout! +request-timeout+)
-        (sock.set-output-timeout! +response-timeout+)
+  (using (transport :- Transport)
+    (displayln ">>>1")
+    (def ibuf (open-buffered-reader (transport.reader) +input-buffer-size+))
+    (displayln ">>>2")
+    (def obuf (open-buffered-writer (transport.writer) +output-buffer-size+))
+    (displayln ">>>3")
+    (let ((req (make-LspReqResp ibuf transport #f))
+          (res (make-LspReqResp obuf transport #f)))
+      (displayln ">>>4")
+      (using ((req :- LspReqResp)
+              (res :- LspReqResp))
+        (displayln ">>>5")
         (def ok #t)
-        (while ok ; break out on socket-disconnected or incoming non-JSON payload (ie. not an LSP client)
+        (while ok ; break out on transport-disconnected or incoming non-JSON payload (ie. not an LSP client) — both cases conveniently caught by a throwing read attempt
           (try
-            ;; Buffered IO from sock to req
             (set! ok (read-request! req))
             ;; Try to handle the Notification/Request
             (serve-json-rpc! res lsp-processor req.json)
@@ -111,24 +124,24 @@
             (errorf "=== exception raised in lsp-server ~a" e)
             (internal-error e))
           (finally
-            ;; Reset the buffers but don't close the socket
+            ;; Reset the buffers but don't close the transport
             (set! req.json #f)
             (set! res.json #f)
-            (&BufferedReader-reset! req.buf (sock.reader) #f)
-            (&BufferedWriter-reset! res.buf (sock.writer) #f))))))))
+            (&BufferedReader-reset! req.buf (transport.reader) #f)
+            (&BufferedWriter-reset! res.buf (transport.writer) #f))))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
-;; res <- lsp-response
+;; res <- LspReqResp
 (def (serve-json-rpc! res processor request-json)
-  (using (res :- lsp-response)
+  (using (res :- LspReqResp)
     (set! res.json (serve-json-rpc processor request-json))))
 
 ;; Perform buffered io on the request and parse the body
 ;; as json, storing it in the req object
-;; req <- lsp-request
+;; req <- LspReqResp
 (def (read-request! req)
   (debugf "=== read-request!")
-  (using (req :- lsp-request)
+  (using (req :- LspReqResp)
     (try
      (let* ((ibuf req.buf)
             (headers (read-request-headers ibuf))
@@ -141,13 +154,13 @@
        (internal-error e)
        #f))))
 
-;; Buffered IO on the socket
-;; res <- lsp-response
+;; Buffered IO on the transport
+;; res <- LspReqResp
 (def (write-response! res)
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  (using ((res :- lsp-response)
+  (using ((res :- LspReqResp)
           (obuf res.buf :- BufferedWriter))
     (let ((out (json-object->bytes res.json)))
       (debugf "=== Response ~a" (bytes->string out))
@@ -199,7 +212,7 @@
 ;; For us, this is a no-op.
 (defhandler "initialized"
   (lambda (params)
-    (lsp-client-s-initialized-set! +lsp-client+ #t)))
+    (LspClient-initialized-set! +lsp-client+ #t)))
 
 (def (pre-init-handler method params)
   (debugf "=== pre-init-handler")
@@ -212,7 +225,7 @@
   (debugf "=== initialize-server")
   ;; Just crash on void params
   (let/cc return
-    (using (lsp-client +lsp-client+ :- lsp-client-s)
+    (using (lsp-client +lsp-client+ :- LspClient)
       (try
        (let-hash params
          ;; Use the new .$ accessor for string keys
