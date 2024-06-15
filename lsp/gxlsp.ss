@@ -64,10 +64,10 @@
 ; If users ever really request it, further impls could include pipes or client-socket
 ; (where LSP client is the listener) or a more refined / multi-client server-socket.
 
-(defstruct Transport (reader writer) final: #t)
+(defstruct Transport ((reader : Reader) (writer : Writer)) final: #t)
 (def (transport-stdio)
-  (make-Transport (reader: (Reader (make-raw-binary-input-port (current-input-port))))
-                  (writer: (Writer (make-raw-binary-output-port (current-output-port))))))
+  (make-Transport (Reader (make-raw-binary-input-port (current-input-port)))
+                  (Writer (make-raw-binary-output-port (current-output-port)))))
 (def (transport-server-socket addr-and-port)
   (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
           (sock (srv.accept) :- StreamSocket))
@@ -80,12 +80,13 @@
 (def (start! addr-and-port)
   (start-logger!)
   (infof "Gerbil LSP started...")
+  (thread-yield!)
   ; TODO: transport choice via CLI arg!
   (lsp-server (transport-stdio)))
   ; (lsp-server (transport-server-socket addr-and-port)))
 
 ;; Structures for handling state
-(defstruct LspReqResp (buf transport json)
+(defstruct LspReqResp (buf (transport : Transport) json)
   final: #t)
 (defstruct LspClient (  client-name client-version ;; obtained from InitializeParams
                         initializationOptions capabilities workspaceFolders ;; dito
@@ -98,66 +99,64 @@
 ;; Main entry point.
 ;; transport <- Transport
 ;; Processes requests through `handle-request!`.
-(def (lsp-server transport)
+(def (lsp-server (transport : Transport))
   (debugf "=== lsp-server")
-  (using (transport :- Transport)
-    (def ibuf (open-buffered-reader transport.reader +input-buffer-size+))
-    (def obuf (open-buffered-writer transport.writer +output-buffer-size+))
-    (let ((req (make-LspReqResp ibuf transport #f))
-          (res (make-LspReqResp obuf transport #f)))
-      (using ((req :- LspReqResp)
-              (res :- LspReqResp))
-        (def ok #t)
-        (while ok ; break out on transport-disconnected or incoming non-JSON payload (ie. not an LSP client) — both cases conveniently caught by a throwing read attempt
-          (try
-            (set! ok (read-request! req))
-            ;; Try to handle the Notification/Request
-            (serve-json-rpc! res lsp-processor req.json)
-            ;; Only respond to Requests, but not Notifications
-            (if (hash-get req.json "id")
-              (write-response! res))
-          (catch (e)
-            (errorf "=== exception raised in lsp-server ~a" e)
-            (internal-error e))
-          (finally
-            ;; Reset the buffers but don't close the transport
-            (set! req.json #f)
-            (set! res.json #f)
-            (&BufferedReader-reset! req.buf transport.reader #f)
-            (&BufferedWriter-reset! res.buf transport.writer #f))))))))
+  (def ibuf (open-buffered-reader transport.reader +input-buffer-size+))
+  (def obuf (open-buffered-writer transport.writer +output-buffer-size+))
+  (let ((req (make-LspReqResp ibuf transport #f))
+        (res (make-LspReqResp obuf transport #f)))
+    (using ((req :- LspReqResp)
+            (res :- LspReqResp))
+      (def ok #t)
+      (while ok ; break out on transport-disconnected or incoming non-JSON payload (ie. not an LSP client) — both cases conveniently caught by a throwing read attempt
+        (try
+          (set! ok (read-request! req))
+          ;; Try to handle the Notification/Request
+          (serve-json-rpc! res lsp-processor req.json)
+          ;; Only respond to Requests, but not Notifications
+          (if (hash-get req.json "id")
+            (write-response! res))
+        (catch (e)
+          (errorf "=== exception raised in lsp-server ~a" e)
+          (internal-error e))
+        (finally
+          ;; Reset the buffers but don't close the transport
+          (set! req.json #f)
+          (set! res.json #f)
+          (displayln ">>>RESET-REQ") (thread-yield!)
+          (&BufferedReader-reset! req.buf transport.reader #f)
+          (displayln ">>>RESET-RESP") (thread-yield!)
+          (&BufferedWriter-reset! res.buf transport.writer #f)           (displayln ">>>RESET-DONE") (thread-yield!) ))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
 ;; res <- LspReqResp
-(def (serve-json-rpc! res processor request-json)
-  (using (res :- LspReqResp)
-    (set! res.json (serve-json-rpc processor request-json))))
+(def (serve-json-rpc! (res : LspReqResp) processor request-json)
+  (set! res.json (serve-json-rpc processor request-json)))
 
 ;; Perform buffered io on the request and parse the body
 ;; as json, storing it in the req object
 ;; req <- LspReqResp
-(def (read-request! req)
+(def (read-request! (req : LspReqResp))
   (debugf "=== read-request!")
-  (using (req :- LspReqResp)
-    (try
-     (let* ((ibuf req.buf)
-            (headers (read-request-headers ibuf))
-            (json (bytes->json (read-request-body ibuf headers))))
-       (debugf "=== Request ~a" (json-object->string json))
-       (set! req.json json)
-       #t)
-     (catch (e)
-       (debugf "Exception raised in read-request!: ~a" e)
-       (internal-error e)
-       #f))))
+  (try
+    (let* ((ibuf req.buf)
+          (headers (read-request-headers ibuf))
+          (json (bytes->json (read-request-body ibuf headers))))
+      (debugf "=== Request ~a" (json-object->string json))
+      (set! req.json json)
+      #t)
+    (catch (e)
+      (debugf "Exception raised in read-request!: ~a" e)
+      (internal-error e)
+      #f)))
 
 ;; Buffered IO on the transport
 ;; res <- LspReqResp
-(def (write-response! res)
+(def (write-response! (res : LspReqResp))
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  (using ((res :- LspReqResp)
-          (obuf res.buf :- BufferedWriter))
+  (using ((obuf res.buf :- BufferedWriter))
     (let ((out (json-object->bytes res.json)))
       (debugf "=== Response ~a" (bytes->string out))
       ;; Headers
