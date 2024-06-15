@@ -80,8 +80,9 @@
 (def (start! addr-and-port)
   (start-logger!)
   (infof "Gerbil LSP started...")
-  ; TODO: transport choice via CLI arg. for now, default to stdio:
-  (lsp-server (transport-stdio)))
+  ; TODO: transport choice via CLI arg!
+  ; (lsp-server (transport-stdio)))
+  (lsp-server (transport-server-socket addr-and-port)))
 
 ;; Structures for handling state
 (defstruct LspReqResp (buf transport json)
@@ -100,17 +101,12 @@
 (def (lsp-server transport)
   (debugf "=== lsp-server")
   (using (transport :- Transport)
-    (displayln ">>>1")
-    (def ibuf (open-buffered-reader (transport.reader) +input-buffer-size+))
-    (displayln ">>>2")
-    (def obuf (open-buffered-writer (transport.writer) +output-buffer-size+))
-    (displayln ">>>3")
+    (def ibuf (open-buffered-reader transport.reader +input-buffer-size+))
+    (def obuf (open-buffered-writer transport.writer +output-buffer-size+))
     (let ((req (make-LspReqResp ibuf transport #f))
           (res (make-LspReqResp obuf transport #f)))
-      (displayln ">>>4")
       (using ((req :- LspReqResp)
               (res :- LspReqResp))
-        (displayln ">>>5")
         (def ok #t)
         (while ok ; break out on transport-disconnected or incoming non-JSON payload (ie. not an LSP client) — both cases conveniently caught by a throwing read attempt
           (try
@@ -127,8 +123,8 @@
             ;; Reset the buffers but don't close the transport
             (set! req.json #f)
             (set! res.json #f)
-            (&BufferedReader-reset! req.buf (transport.reader) #f)
-            (&BufferedWriter-reset! res.buf (transport.writer) #f))))))))
+            (&BufferedReader-reset! req.buf transport.reader #f)
+            (&BufferedWriter-reset! res.buf transport.writer #f))))))))
 
 ;; Same as in :std/net/json-rpc but store the result in a struct
 ;; res <- LspReqResp
