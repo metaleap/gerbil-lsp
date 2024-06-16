@@ -12,7 +12,7 @@
         :std/text/json
         :std/net/json-rpc
         ./handling
-        ; ./lsp-lifecycle
+        ./lsp-lifecycle
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 
