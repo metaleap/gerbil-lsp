@@ -22,6 +22,7 @@
 
 
 
+;; ddd
 (defhandler "initialize"
   (lambda (params)
     (debugf "=== initialize handler")
