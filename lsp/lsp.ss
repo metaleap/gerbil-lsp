@@ -11,6 +11,7 @@
         :std/net/json-rpc
         ./handling
         ./lsp-lifecycle
+        ./lsp-lang-stuff
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 

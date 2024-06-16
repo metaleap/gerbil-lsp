@@ -38,16 +38,18 @@
                                   ("workspace" (hash
                                     ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))
                                     ("fileOperations"
-                                      (let (workspace-file-ops (hash ("filters" [(hash ("pattern" "*.ss"))])))
+                                      (let (workspace-file-ops
+                                        (hash ("filters" [(hash ("pattern"
+                                          (hash ("glob" "**/*.ss")))
+                                                ("matches" "file"))])))
                                         (hash ("didCreate" workspace-file-ops)
                                               ("didRename" workspace-file-ops)
-                                              ("didDelete" workspace-file-ops))))
-                                  ))
-                                  ("textDocumentSync"
-                                    (hash ("openClose" #f)
-                                          ("change" 1)))
-                                  ("notebookDocumentSync"
-                                    (hash ("notebook" "*.gerbilrepl")))
+                                              ("didDelete" workspace-file-ops))))))
+                                  ; ("textDocumentSync"
+                                  ;   (hash ("openClose" #f)
+                                  ;         ("change" 1)))
+                                  ; ("notebookDocumentSync"
+                                  ;   (hash ("notebook" "*.gerbilrepl")))
                                   ("positionEncoding"
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients; others optional, but no point then
 
@@ -94,7 +96,9 @@
                                   ("typeHierarchyProvider"
                                     #f)
                                   ("diagnosticProvider"
-                                    (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
+                                    #f)
+                                  ; ("diagnosticProvider"
+                                  ;   (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
 )))))))
 
 
