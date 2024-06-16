@@ -35,10 +35,67 @@
         (set! lsp-client.workspaceFolders      .$workspaceFolders)
         (hash ("serverInfo"   +server-info+)
               ("capabilities" (hash
-                                  ("positionEncoding" "utf-16") ; sadly mandatory
-                                  ("workspace" (hash ("workspaceFolders" (hash ("supported" #t)))))
-                                  ("hoverProvider" #t)
-                                )))))))
+                                  ("workspace" (hash
+                                    ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))
+                                    ("fileOperations"
+                                      (let (workspace-file-ops (hash ("filters" [(hash ("pattern" "*.ss"))])))
+                                        (hash ("didCreate" workspace-file-ops)
+                                              ("didRename" workspace-file-ops)
+                                              ("didDelete" workspace-file-ops))))
+                                  ))
+                                  ("textDocumentSync"
+                                    (hash ("openClose" #f)
+                                          ("change" 1)))
+                                  ("notebookDocumentSync"
+                                    (hash ("notebook" "*.gerbilrepl")))
+                                  ("positionEncoding"
+                                    "utf-16") ; utf-16 sadly mandatory for servers & clients; others optional, but no point then
+
+                                  ("completionProvider"
+                                    #f) ; when changing, it's an object not #t!
+                                  ("signatureHelpProvider"
+                                    #f) ; when changing, it's an object not #t!
+                                  ("hoverProvider"
+                                    #t)
+                                  ("definitionProvider"
+                                    #f)
+                                  ("declarationProvider"
+                                    #f)
+                                  ("typeDefinitionProvider"
+                                    #f)
+                                  ("implementationProvider"
+                                    #f)
+                                  ("referencesProvider"
+                                    #f)
+                                  ("documentHighlightProvider"
+                                    #f)
+                                  ("documentSymbolProvider"
+                                    #f)
+                                  ("workspaceSymbolProvider"
+                                    #f) ; when changing, it's an object not #t!
+                                  ("codeActionProvider"
+                                    #f) ; when changing, it's an object not #t!
+                                  ("codeLensProvider"
+                                    #f) ; when changing, it's an object not #t!
+                                  ("documentFormattingProvider"
+                                    #f)
+                                  ("documentRangeFormattingProvider"
+                                    #f)
+                                  ("renameProvider"
+                                    #f)
+                                  ("executeCommandProvider"
+                                    (hash ("commands" [])))
+                                  ("selectionRangeProvider"
+                                    #f)
+                                  ("linkedEditingRangeProvider"
+                                    #f)
+                                  ("callHierarchyProvider"
+                                    #f)
+                                  ("typeHierarchyProvider"
+                                    #f)
+                                  ("diagnosticProvider"
+                                    (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
+)))))))
 
 
 (defhandler "initialized"
@@ -53,4 +110,4 @@
 
 (defhandler "exit"
   (lambda (params)
-    (void)))
+    (exit)))
