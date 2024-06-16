@@ -1,3 +1,5 @@
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
+
 (import :std/cli/getopt
         :std/io
         :std/sugar
@@ -39,8 +41,16 @@
                                 )))))))
 
 
-;; A client should complete initialization by sending an 'initialized' Notification.
-;; For us, this is a no-op for now.
 (defhandler "initialized"
+  (lambda (params)
+    (void)))
+
+
+(defhandler "shutdown"
+  (lambda (params)
+    (void)))
+
+
+(defhandler "exit"
   (lambda (params)
     (void)))
