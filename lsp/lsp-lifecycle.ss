@@ -22,7 +22,6 @@
 
 
 
-;; ddd
 (defhandler "initialize"
   (lambda (params)
     (debugf "=== initialize handler")
@@ -52,7 +51,7 @@
                                   ; ("notebookDocumentSync"
                                   ;   (hash ("notebook" "*.gerbilrepl")))
                                   ("positionEncoding"
-                                    "utf-16") ; utf-16 sadly mandatory for servers & clients; others optional, but no point then
+                                    "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
 
                                   ("completionProvider"
                                     #f) ; when changing, it's an object not #t!
