@@ -3,5 +3,5 @@
 (import :std/build-script)
 
 (defbuild-script
-  '("lsp/lib"
+  '("lsp/handling" "lsp/lsp-lifecycle"
     (exe: "lsp/gxlsp" bin: "gxlsp")))

@@ -15,7 +15,7 @@ linux-static:
 	make -C /src/ build-release
 
 install:
-	mv .gerbil/bin/lsp /usr/local/bin/lsp
+	mv .gerbil/bin/gxlsp /usr/local/bin/gxlsp
 
 clean:
 	gerbil clean

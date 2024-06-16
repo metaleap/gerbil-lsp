@@ -1,42 +1,24 @@
 ;;; -*- Gerbil -*-
-;;; © belmarca 2024
+;;; © 2024 belmarca, metaleap
 ;;; The Gerbil LSP Server
-
-(import (only-in :gerbil/gambit pretty-print)
-        :std/cli/getopt
-        :std/io
-        :std/io/dummy
-        :std/error
-        :std/actor
-        :std/interface
-        :std/sugar
-        :std/logger
-        :std/contract
-        :std/os/socket
-        :std/text/json
-        :std/net/json-rpc
-        (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 (export main)
 
-;;;
-;;; Globals
-;;;
+(import :std/cli/getopt
+        :std/io
+        :std/sugar
+        :std/logger
+        :std/os/socket
+        :std/text/json
+        :std/net/json-rpc
+        ./handling
+        ; ./lsp-lifecycle
+        (only-in :std/net/httpd/handler read-request-headers read-request-body))
+
 
 (deflogger gxlsp)
+(def +lsp-version+ "3.17")
 
-(def +lsp-version+        "3.17")
-(def +server-name+        "gxlsp")
-(def +server-version+     "0.0.1")
-(def +server-info+        (hash ("name" +server-name+) ("version" +server-version+)))
-(def +initialized+        #f)  ;; Is the server initialized?
-
-(def +request-timeout+    60)
-(def +response-timeout+   120)
-(def +input-buffer-size+  (expt 2 13))
-(def +output-buffer-size+ (expt 2 15))
-
-(def +handlers+           (make-hash-table))
 
 ;;;
 ;;; Misc
@@ -44,26 +26,26 @@
 
 ;; Same as in :std/net/json-rpc
 (def (bytes->json b) ;; Don't intern JSON keys, using strings
-  (parameterize ((json-symbolic-keys #f)) (bytes->json-object b)))
+  (parameterize ((json-symbolic-keys #f))
+    (bytes->json-object b)))
 
 ;; IO helper
-(def CR (char->integer #\return))
-(def LF (char->integer #\linefeed))
 (def (write-crlf obuf)
+  (def CR (char->integer #\return))
+  (def LF (char->integer #\linefeed))
   (using (obuf :- BufferedWriter)
     (obuf.write-u8-inline CR)
     (obuf.write-u8-inline LF)))
 
-;;;
-;;; Server API
-;;;
 
+;;;
+;;; Serving
+;;;
 
 ; Multiple transports: currently implemented below are stdio and server-socket
 ; (the latter single-client and blocking-while-listening-until-accept).
 ; If users ever really request it, further impls could include pipes or client-socket
 ; (where LSP client is the listener) or a more refined / multi-client server-socket.
-
 (defstruct Transport ((reader : BufferedReader) (writer : BufferedWriter)) final: #t)
 (def (transport-stdio)
   (make-Transport (open-buffered-reader (current-input-port))
@@ -71,63 +53,48 @@
 (def (transport-server-socket addr-and-port)
   (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
           (sock (srv.accept) :- StreamSocket))
-            (sock.set-input-timeout! +request-timeout+)
-            (sock.set-output-timeout! +response-timeout+)
+            ; we dont use timeouts for this kind of connection: it's long-lived & single-client
             (make-Transport (open-buffered-reader (StreamSocket-reader sock))
                             (open-buffered-writer (StreamSocket-writer sock)))))
+
 
 ;; Start the server.
 (def (start! addr-and-port)
   (start-logger!)
   (infof "Gerbil LSP started...")
   (thread-yield!)
-  ; TODO: transport choice via CLI arg!
-  (lsp-server (transport-stdio)))
-  ; (lsp-server (transport-server-socket addr-and-port)))
 
-;; Structures for handling state
-(defstruct LspReqResp ((transport : Transport) json)
-  final: #t)
-(defstruct LspClient (  client-name client-version ;; obtained from InitializeParams
-                        initializationOptions capabilities workspaceFolders ;; dito
-                        initialized) ;; set on receipt of the Initialized notification
-  final: #t)
+  (lsp-serve (if (and addr-and-port (fx> (string-length addr-and-port) 0))
+                  (transport-server-socket addr-and-port)
+                  (transport-stdio))))
 
-;; gxlsp is a single-client server so far.
-(def +lsp-client+ (make-LspClient #f #f #f #f #f #f))
 
-;; Main entry point.
-;; transport <- Transport
-;; Processes requests through `handle-request!`.
-(def (lsp-server (transport : Transport))
-  (debugf "=== lsp-server")
+(defstruct LspReqResp ((transport : Transport) json) final: #t)
+
+;; The serving loop: processes requests through `handle-request!`.
+(def (lsp-serve (transport : Transport))
+  (debugf "=== lsp-serve")
   (let ((req (make-LspReqResp transport #f))
         (res (make-LspReqResp transport #f)))
     (using ((req :- LspReqResp)
             (res :- LspReqResp))
-      (def ok #t)
-      (while ok ; break out on transport-disconnected or incoming non-JSON payload (ie. not an LSP client) — both cases conveniently caught by a throwing read attempt
-        (try
-          (set! ok (read-request! req))
-          ;; Try to handle the Notification/Request
-          (serve-json-rpc! res lsp-processor req.json)
-          ;; Only respond to Requests, but not Notifications
-          (if (hash-get req.json "id")
-            (write-response! res))
-        (catch (e)
-          (errorf "=== exception raised in lsp-server ~a" e)
-          (internal-error e))
-        (finally
-          (set! req.json #f) (set! res.json #f)))))))
+      (def done #f)
+      (while (not done)
+        ; the below (before the `try`) never throws
+        (let (ok-or-err (read-request! req))
+          (if (eqv? #t ok-or-err) ; either way, we set `res.json`
+              (set! res.json (serve-json-rpc lsp-processor req.json))
+              (using (err ok-or-err :- JSON-RPCError)
+                (set! res.json err #;(trivial-class->json-object err)))))
+        ;; only respond to Requests, but not Notifications
+        (when (hash-get req.json "id")
+          (try
+            (write-response! res)
+          (catch (e) ; if write throws, we are irreparably disconnected
+            (errorf "=== exception raised in lsp-serve ~a" e)
+            (set! done #t))))))))
 
-;; Same as in :std/net/json-rpc but store the result in a struct
-;; res <- LspReqResp
-(def (serve-json-rpc! (res : LspReqResp) processor request-json)
-  (set! res.json (serve-json-rpc processor request-json)))
 
-;; Perform buffered io on the request and parse the body
-;; as json, storing it in the req object
-;; req <- LspReqResp
 (def (read-request! (req : LspReqResp))
   (debugf "=== read-request!")
   (try
@@ -139,11 +106,9 @@
                 #t))
     (catch (e)
       (debugf "Exception raised in read-request!: ~a" e)
-      (internal-error e)
-      #f)))
+      (internal-error e))))
 
-;; Buffered IO on the transport
-;; res <- LspReqResp
+
 (def (write-response! (res : LspReqResp))
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
@@ -157,93 +122,20 @@
       (write-crlf obuf)
       (write-crlf obuf)
       ;; Body
-      (obuf.write (json-object->bytes res.json))
+      (obuf.write out)
       (obuf.flush))))
 
-;; See :std/net/json-rpc
-(def (lsp-processor method params)
-  (debugf "=== lsp-processor (~a)" method)
-  ;; Special handling required by the LSP protocol
-  (if (not +initialized+)
-    (pre-init-handler method params)
-    ((method-handler method) params)))
 
-;;; Handlers
 
-;; Handlers must return JSON-serializable objects, either an instance
-;; of the Request/Notification class they are handling OR a JSON-RPC error.
-;; Subclass JSON to be JSON-serializable.
-
-(def (method-handler method)
-  (debugf "=== method-handler")
-  (hash-ref +handlers+ method method-not-found))
-
-(defrule (defhandler method handler)
-  (hash-put! +handlers+ method handler))
-
-;; Initialize Request handler
-(defclass (InitializeResult JSON) (capabilities serverInfo)
-  constructor: :init!)
-(defmethod {:init! InitializeResult}
-  (lambda (self capabilities serverInfo)
-    (class-instance-init! self capabilities: capabilities serverInfo: serverInfo)))
-
-(defhandler "initialize"
-  (lambda (params)
-    (debugf "=== initialize handler")
-    (if +initialized+
-      (internal-error "Server already initialized.")
-      (initialize-server params))))
-
-;; A client should complete initialization by sending an 'initialized' Notification.
-;; For us, this is a no-op.
-(defhandler "initialized"
-  (lambda (params)
-    (LspClient-initialized-set! +lsp-client+ #t)))
-
-(def (pre-init-handler method params)
-  (debugf "=== pre-init-handler")
-  ;; Notifications are dropped at the JSON-RPC layer
-  (if (equal? "initialize" method)
-    ((method-handler "initialize") params)
-    (json-rpc-error code: -32002 data: (void) message: "Server is not initialized.")))
-
-(def (initialize-server params)
-  (debugf "=== initialize-server")
-  ;; Just crash on void params
-  (let/cc return
-    (using (lsp-client +lsp-client+ :- LspClient)
-      (try
-       (let-hash params
-         ;; Use the new .$ accessor for string keys
-         (when .$clientInfo
-           (set! lsp-client.client-name    (hash-get .$clientInfo "name"))
-           (set! lsp-client.client-version (hash-get .$clientInfo "version")))
-         (set! lsp-client.initializationOptions .$initializationOptions)
-         (set! lsp-client.capabilities          .$capabilities)
-         (set! lsp-client.workspaceFolders      .$workspaceFolders)
-         (let (capabilities (generate-capabilities params))
-           (set! +initialized+ #t)
-           (debugf "=== set up lsp-client struct")
-           (return capabilities)))
-       (catch (e)
-         (errorf "=== exception in initialize-server ~a" e)
-         (raise e))))))
-
-(def (generate-capabilities params)
-  (InitializeResult (hash
-                      ("positionEncoding" "utf-16")
-                      ("workspace" (hash ("workspaceFolders" (hash ("supported" #t)))))
-                      ("hoverProvider" #t)
-                    ) +server-info+))
-
+;;;
 ;;; CLI
+;;;
 
 ;; Argument handling
 (def address-port-optional-argument
-  (optional-argument 'address-port
-                     help: "the address:port to bind to"
-                     default: "127.0.0.1:12512"))
+  (optional-argument 'addr
+                     help: "The 'address:port' to TCP-listen at. If missing or empty, stdio transport is used instead of TCP."
+                     default: ""))
 
 (def loglevel-option
   (option 'loglevel "-l" "--loglevel"
@@ -261,4 +153,4 @@
 (def (gxlsp-main opt)
   (let-hash opt
     (current-logger-options .?loglevel)
-    (start! .?address-port)))
+    (start! .?addr)))
