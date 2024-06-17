@@ -1,4 +1,4 @@
-From the LSP vantage, functionality that would be desirable in the `std/ide` lib, a summarized list.
+From the LSP vantage, functionality that'll be desirable for `std/ide` to expose.
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
