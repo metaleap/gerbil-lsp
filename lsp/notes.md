@@ -20,7 +20,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 - **source-file-opened**
 - **source-file-closed**
 
-**All the above means that neither `lsp` nor `ide` needs to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho), whether that's LSP clients / editors (they do that already) or any other `ide` consumers.
+**All of the above means that neither `lsp` nor `ide` needs to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho), whether that's LSP clients / editors (they do that already) or any other `ide` consumers.
 
 # 2. Actual Language Intel
 
@@ -101,7 +101,7 @@ Args:
 - a "lookup kind": one of `ide`-defined known-enumerants:
   - at least:
     - `'def` (go to definition) — be sure to catch locals or file-level defs shadowing imported ones
-    - `'refs` (list references) — to work both on a def _and_ on a ref _to_ some def
+    - `'refs` (list references) — whether we're _on_ a def, or on a ref _to_ some def
   - optionally, if exciting-and-feasible:
     - `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident)
     - `'iface-impls` (known implicit implementations of current interface)
