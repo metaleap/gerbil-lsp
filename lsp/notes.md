@@ -2,6 +2,10 @@ From the LSP vantage, functionality that would be desirable in the `std/ide` lib
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
+<style type="text/css">
+  h2 { color: #ccc; background-color: #777; }
+</style>
+
 # 1. Workspace syncing
 
 Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session:
@@ -33,7 +37,7 @@ These features are roughly ordered such that work on later ones will likely (bes
 
 ## defs-in-file
 
-Inputs:
+Args:
 - a single Gerbil Scheme source file path
 - a bool whether full tree hierarchy is wanted or just flat list of top-level-defs
 
@@ -47,7 +51,7 @@ Mandatory fields:
   - **children** — to make the hierarchy tree happen, zero or more direct descendant symbols (each same struct as the parent)
 
 Desirable fields:
-  - **kind**: one of `ide`-defined known-enumerants (function, var, struct, class, interface, macro etc)
+  - **kind**: one of `ide`-defined known-enumerants (e.g. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be included if it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
@@ -55,13 +59,13 @@ Desirable fields:
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
-### Extra nice to have:
+**Extra nice to have:**
 
 "Expansion" of custom `defrule`s, for example: although this [defhandler](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) macro would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
 
 ## defs-search
 
-Inputs:
+Args:
 - a "query" (usually incoming as substring of, or full, symbol identifier)
 
 Results:
@@ -71,7 +75,7 @@ Results:
 
 ## completions
 
-Inputs:
+Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
 
@@ -91,3 +95,15 @@ Results:
 **On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
+
+## lookup
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+- a "lookup kind": one of `ide`-defined known-enumerants
+  - at least: `'def` (go to definition), `'refs` (list references)
+  - optionally, if exciting-and-feasible: `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident), `'iface-impls` (known implicit implementations of current interface), `'ifaces-impld` (interfaces that current class is known to implicitly implement), any others later on if & as they come to mind in the community
+
+Results:
+- a flat list of zero more "locations" (pair of source file path and _range_, ie. start-end-pair)
