@@ -171,6 +171,27 @@ Results:
   - the _key_ is the source file path that the _value_ applies to
   - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
 
+## _`on-file-issues-changed`_
+
+Args:
+- a function passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably)
+
+Results:
+- `(void)`
+
+The callback arg passed by caller would receive:
+- a source file path
+- a list of zero-or-more "issues" with that file, each such issue entry being a structure with:
+  - the _range_ in the source file that the issue applies to
+  - an `ide`-defined severity/category enumeration such as eg. `'err`, `'warn`, `'hint`, `'info` (as applicable)
+  - the (error / warning / info / etc) message itself
+  - error / warning / etc code (number or ident) — if there's such a thing in Gerbil
+  - tags: optional list of such categorization tags as commonly yield special UI renditions other than squigglies, such as `'deprecated` (yields strike-thru font style) or `'unused` (yields faded text color)
+
+Of note, the list-of-issues for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-issues, empty or not.
+
+**The challenge:** a change in any one source file may well affect its direct or indirect (!) importers and those, too, should also be re-analyzed and have their list-of-issues re-announced over the callback arg (one such call per file).
+
 ## _`ast-parents`_
 
 Args:
