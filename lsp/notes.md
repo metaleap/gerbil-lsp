@@ -34,7 +34,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 # 2. Language intel: the essentials
 
-**These features are "sorted in order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
+**These features are "sorted in presumed order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
   - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) requires taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
@@ -53,25 +53,28 @@ Results:
 
 Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, interface etc.
 
-Mandatory fields:
+Mandatory fields per list item:
   - **name**
-  - **children** — to make the hierarchy tree happen, zero or more direct-descendant symbol defs aka. locals (each same struct as this parent)
+  - **children** — to make the hierarchy tree happen, zero or more descendant symbol defs, ie. locals (each same struct as this parent)
 
-Desirable fields:
+Desirable fields, as feasible / applicable:
   - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro`, `'other` etc)
-    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted where it makes sense (that's `ide`'s call though)
+    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
   - **deprecated** bool (if there's a "defacto standard" notation for that in Gerbil)
-  - **description**: `#f` or `""` or existing markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
-  - **detail**: `#f` or `""` or could be a non-markdown plain-text of extra information, for example:
+  - **description**:
+    - `#f` or `""` or
+    - existing markdown doc or
+    - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
+  - **detail**: `#f` or `""` or could be a non-markdown, plain text of extra information, for example:
     - signature or type name, if known
-    - failing both, for locals, name(s) of parent(s)
+    - failing both: for locals, name(s) of parent(s)
     - or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
 **Extra nice to have:**
 
-"Expansion" of custom `defrule`s, for example: although [this 'defhandler' defrule](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
+"Expansion" of custom `defrule`s or custom macros starting with the `def`-prefix, for example: although [this defrule named 'defhandler'](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _calls_ such as eg. [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as defs in _those_ source files
 
 ## _`defs-search`_
 
@@ -99,8 +102,8 @@ Args:
   - optionally, if exciting-and-feasible:
     - `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident)
     - `'iface-impl`
-      - if on interface or interface method: known implicit implementations of that
-      - if on class or class method: interfaces or interface methods implicitly implemented by that
+      - if on interface def-or-ref or interface method def-or-ref: known implicit implementations of that interface or method
+      - if on class def-or-ref or class method def-or-ref: interfaces or interface methods implicitly implemented by that
     - any others later on if & as they come to mind in the community
 
 Results:
@@ -108,7 +111,7 @@ Results:
 
 Results' source file paths _can_ include files outside the currently opened workspace / "root folders", technically:
 - so for `'def`, _should_ include any find(s) in `std/*`, `gerbil/*` etc (paths located presumably usually somewhere in `/opt/gerbil/src`)
-- whereas for `'refs`, even if the def-referred-to-at-position is in `std/*`, `gerbil/*` etc., we'll only want such refs to it that are located in the currently opened workspace / "root folders" (to not also have to stare at 100s of refs from `std/*`, `gerbil/*` etc.)
+- not so for `'refs`: even if the def-referred-to-at-position is in `std/*`, `gerbil/*` etc., we'll only want such refs to it as are located in the currently-opened workspace / "root folders" (so as to not also have to stare at a listing of 100s of refs from inside `std/*`, `gerbil/*` etc.)
 
 ## _`occurrences`_
 
@@ -145,12 +148,13 @@ Results:
 - any made available by the file's existing `import`s
 - bonus stretch goals:
   - any from any not-yet-imported `std/*` / `gerbil/*` etc or not-yet-imported workspace-local source files with an additional "import edit" to be applied in-editor to the current source (such a text-edit being simply an (insert-text,insert-position) pair)
-- might also want to include any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly, at least in the use-case of enumerants)
-  - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
+- plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
+
+All prefix-filtered by the ident-compatible text fragment directly before the current-position, unless there's a non-ident-compatible char just before it.
 
 **On "dot completions":** imho, since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
-- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`), ie. "there _is_ no 'dot-completion' (special handling on dot)"
+- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`), ie. "there _is_ no 'dot-completion' (special handling of dots)"
 
 ## _`doc-tips`_
 
@@ -230,11 +234,12 @@ Args:
 Results:
 - a list of zero-or-more signature-info structs containing:
   - **signature**: the syntactical form clarifying the signature, ie. `(name arg arg)` or `(name arg . rest)` etc.
-  - **description**: the same as first described above in `defs-in-file`
+    - This should not be a direct source extract of the func/macro def's name-and-args (might include commented-forms, might be multi-line etc) but instead pieced together freshly from the relevant AST
+  - **description**: same as first described above in `defs-in-file`
 
-Call forms might not only be on resolved lambda-valued defs but also macros and native/primitive/special forms. Might be neat to have 'em all! But func calls of course the most important.
+Call forms might not only refer to resolved func-valued defs but also macros and native/primitive/special forms. Might be neat to have 'em all! But func calls of course the most important.
 
-**Should (imho) return empty list whenever** the form _at current position_ is not a call, even if ancestor forms are — because in Lisp/Scheme they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form.
+**Should (imho) return empty list whenever** the form _at current position_ is not a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form.
 
 # 3. Language intel: bonus / icing on the cake
 
