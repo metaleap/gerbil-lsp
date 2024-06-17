@@ -51,7 +51,9 @@ Desirable fields:
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be included if it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
-  - **detail**: can be signature or type annotation or whatever else that's "good to know" and pertinent to and available for the def/decl
+  - **detail**: could be, for example:
+    - signature or type annotation (note: put syntax and idents inside markdown inline-code tag (`` ` ``) or Scheme-syntax tag (`` ```scheme ``), such that eg. `*myglobal*`  does not falsely render as an italic, de-asterisk'd "_myglobal_")
+    - or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
