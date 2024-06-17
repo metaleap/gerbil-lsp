@@ -24,7 +24,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 **All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho), whether that's LSP clients / editors (they do that already) or any other `ide` consumers.
 
-# 2. Actual Language Intel
+# 2. MVP language intel
 
 **These features are "sorted in order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
@@ -191,6 +191,8 @@ The callback func passed in by the caller would receive:
 Of note, the list-of-issues for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-issues, empty or not.
 
 **The challenge:** a change in any one source file may well affect its direct or indirect (!) importers and those, too, should also be re-analyzed and have their list-of-issues re-announced over the callback arg (one such call per file).
+
+# 3. Bonus language intel (icing on the cake)
 
 ## _`ast-parents`_
 
