@@ -2,9 +2,9 @@ From the LSP vantage, functionality that would be desirable in the `std/ide` lib
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
-<style type="text/css">
+<span><style type="text/css">
   h2 { color: #ccc; background-color: #777; }
-</style>
+</style></span>
 
 # 1. Workspace syncing
 
