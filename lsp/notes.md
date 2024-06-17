@@ -12,8 +12,8 @@ Necessary:
 - **source-files-created** with a list of Scheme source file paths (it's not necessarily to be assumed they're empty, might be on file paste or on the buffer's first Save)
 - **source-files-renamed** with a list of old-path,new-path pairs (_both_ in each pair are guaranteed by the caller to have Scheme file extensions)
 - **source-file-edited** (this is not-yet-saved live edits — the full new buffer contents would be passed — unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
-- **source-file-changed** for on-disk source file content changes, whether through Save or from _outside the editor_ (still will want to reload those into the session)
-- **root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would also be used for the initial-list-of-root-dirs shortly after the session starts or indeed just whenever a new "workspace" / project (list of root dirs) is opened in the editor
+- **source-file-changed** for on-disk source file content changes, whether through Save or from _outside the editor with the file not being opened inside it_ (will also want to reload _those_ into the session)
+- **root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would _also_ be used for the initial-list-of-root-dirs shortly after the session starts or whenever a new "workspace" / project (list of root dirs) is opened in the editor
 
 Optional, if it makes sense for (or is of interest to) `ide`:
 
