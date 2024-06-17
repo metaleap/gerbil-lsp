@@ -77,14 +77,15 @@ Args:
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
 
 Results:
-- a flat list of symbol items like returned also above in `defs-in-file` and `defs-search`, with these extra considerations:
+- a list of symbol items like returned also above in `defs-in-file` and `defs-search`, with these extra considerations:
   - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
   - **children**: not populated (or even computed)
   - **detail** to be augmented with the `import` where pertinent
 
-**Scope:**
-- any def/decl in the current file
-- any already available via the file's existing `import`s
+**Everything that's in scope:**
+- any top-level def/decl in the current file
+- ancestor locals in scope
+- any made available by the file's existing `import`s
 - bonus stretch: any from any not-yet-imported `std/*` with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
 - might also want to include any `'quoted-ident` already occurring somewhere in this source file (since one is often slinging them around repeatedly)
   - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
@@ -110,7 +111,7 @@ Args:
     - any others later on if & as they come to mind in the community
 
 Results:
-- a flat list of zero more "locations" (pairs of source file path and _range_)
+- a list of zero more "locations" (pairs of source file path and _range_)
 
 ## _`occurrences`_
 
@@ -119,7 +120,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a flat list of zero more location _ranges_ (ie. start-end-pair) in the current file
+- a list of zero more location _ranges_ (ie. start-end-pair) in the current file
 
 Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), this will perhaps be a specialized list-references (see above, eg. `lookup path pos 'refs`) to look up refs _only_ in the current file.
 
