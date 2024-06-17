@@ -68,9 +68,9 @@ Args:
 - a "query": usually the substring of a (or the full) def name
 
 Results:
-- a hashtable / alist where:
-  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders"
-  - the _key_ is the path of that source file
+- a hashtable / alist where for each entry:
+  - the _key_ is the path of a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders" that the _value_ applies to
+  - the _value_ is a flat list (no tree hierarchy) of all the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in that source file
 
 ## _`lookup`_
 
@@ -163,7 +163,7 @@ Args:
 - the new name (throw if syntactically invalid ident)
 
 Results:
-- `#f` or `(void)` if new name is identical to old name (clients will likely check usually)
-- else: a hash-table or alist where
-  - the _value_ is a list of edit operations to apply client-side to one specific source file
-  - the _key_ is that source file's path
+- `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!)
+- else, a hash-table or alist where for each entry:
+  - the _key_ is the source file path that the _value_ applies to
+  - the _value_ is a list of _ranges_ representing occurrences in that file of the old name (that _are_ references to the def-being renamed! not shadowings etc)
