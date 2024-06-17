@@ -2,6 +2,8 @@ From the LSP vantage, functionality that'll be desirable for `std/ide` to expose
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
+Paths: for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then translate (if even needed) in both directions to whatever their thing is: project-dir-relative, current-dir-relative etc...
+
 # 1. Workspace syncing
 
 Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session:
@@ -140,3 +142,28 @@ Results:
   - if a fixnum or char literal: the value in the base of decimal, octal, hex
   - any other infos / metadata already lying around for free
 - the _range_ (start-and-end-pos in the source file) of the actual form / AST node that the above doc-tips apply to
+
+## _`can-rename`_
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+
+Results:
+- if nothing to rename at the position: `#f`
+- else: the _range_ of the identifier at the position
+
+## _`rename`_
+
+Workspace-wide def rename.
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+- the new name (throw if syntactically invalid ident)
+
+Results:
+- `#f` or `(void)` if new name is identical to old name (clients will likely check usually)
+- else: a hash-table or alist where
+  - the _value_ is a list of edit operations to apply client-side to one specific source file
+  - the _key_ is that source file's path
