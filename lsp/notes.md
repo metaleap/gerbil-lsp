@@ -174,12 +174,12 @@ Results:
 ## _`on-file-issues-changed`_
 
 Args:
-- a function passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably)
+- a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably)
 
 Results:
 - `(void)`
 
-The callback arg passed by caller would receive:
+The callback func passed in by the caller would receive:
 - a source file path
 - a list of zero-or-more "issues" with that file, each such issue entry being a structure with:
   - the _range_ in the source file that the issue applies to
