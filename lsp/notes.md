@@ -31,7 +31,7 @@ These features are roughly ordered such that work on later ones will likely (bes
   - Handling those (vs. perhaps underlying byte-buffer indices that AST nodes refer to on the `ide`) may need to take into account different EOL markers in the source file (`\r\n` or `\n` or `\r`) and/or the file encoding.
   - The `lsp` user of `ide` will receive, [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations need doing, we need to decide where they're done and what `ide` itself mandates to its callers (if anything).
 
-## `defs-in-file`
+## **_`defs-in-file`_**
 
 Args:
 - a single Gerbil Scheme source file path
@@ -59,7 +59,7 @@ Desirable fields:
 
 "Expansion" of custom `defrule`s, for example: although this [defhandler](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) macro would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
 
-## `defs-search`
+## **_`defs-search`_**
 
 Args:
 - a "query" (usually incoming as substring of, or full, symbol identifier)
@@ -69,7 +69,7 @@ Results:
   - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders"
   - the _key_ is the path of that source file
 
-## `completions`
+## **_`completions`_**
 
 Args:
 - the current source file path
@@ -92,7 +92,7 @@ Results:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
 
-## `lookup`
+## **_`lookup`_**
 
 Args:
 - the current source file path
