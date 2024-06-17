@@ -127,7 +127,7 @@ Results:
 - might also want to include any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly, at least in the use-case of enumerants)
   - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
 
-**On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
+**On "dot completions":** imho, since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`), ie. "there _is_ no 'dot-completion' (special handling on dot)"
 
