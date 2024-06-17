@@ -1,4 +1,4 @@
-From the LSP vantage, functionality that'll be desirable for `std/ide` to expose.
+List of feature suggestions that'll be most-desirable for `std/ide` to expose (to consumers such as `lsp`, and others).
 
 **Namings** used in here are just provisional / placeholder idents, not me prescribing how exports from `ide` should be called.  =)
 
