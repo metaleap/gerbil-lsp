@@ -2,7 +2,7 @@ From the LSP vantage, functionality that'll be desirable for `std/ide` to expose
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
-Paths: for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then translate (if even needed) in both directions to whatever their thing is: project-dir-relative, current-dir-relative etc...
+Paths: for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
 
 # 1. Workspace syncing
 
@@ -26,7 +26,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 # 2. Actual Language Intel
 
-**These features are "sorted in order of dev dependency"** such that work on later ones will likely (best-guess basis) _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
+**These features are "sorted in order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
   - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) may need to take into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
@@ -170,3 +170,39 @@ Results:
 - else, a hash-table or alist where for each entry:
   - the _key_ is the source file path that the _value_ applies to
   - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
+
+## _`ast-parents`_
+
+Args:
+- the current source file path
+- a _position_ (see note at intro of part 2. above)
+
+Results:
+- a struct or pair with
+    1. a range
+    2. a parent (which is itself also such a range/parent struct-or-pair)
+
+  such that the first _range_ is the AST node of the symbol at position, and its "parent" field then contains the _range_ of its parent AST node as well as that one's parent etc.
+
+To clarify by example:
+  - if the input position given is the `z` in the top-level form `(def foo (bar baz))`
+  - the result would be this hierarchy:
+
+      ```scheme
+      ((here-goes-range-of "baz") . ((here-goes-range-of "(bar baz)") . ((here-goes-range-of "(def foo (bar baz))") . #f)))
+      ```
+
+      or, in curly / JSONy terms:
+
+      ```js
+      {
+        "range": hereGoesRangeOf('baz'),
+        "parent": {
+          "range": hereGoesRangeOf('(bar baz)'),
+          "parent": {
+            "range": hereGoesRangeOf('(def foo (bar baz))'),
+            "parent": null
+          }
+        }
+      }
+      ```
