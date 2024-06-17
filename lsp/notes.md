@@ -98,7 +98,9 @@ Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
 - a "lookup kind": one of `ide`-defined known-enumerants
-  - at least: `'def` (go to definition), `'refs` (list references)
+  - at least:
+    - `'def` (go to definition) — be sure to catch locals or file-level defs shadowing imported ones
+    - `'refs` (list references) — to work both on a def _and_ on a ref _to_ some def
   - optionally, if exciting-and-feasible: `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident), `'iface-impls` (known implicit implementations of current interface), `'ifaces-impld` (interfaces that current class is known to implicitly implement), any others later on if & as they come to mind in the community
 
 Results:
