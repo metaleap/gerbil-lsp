@@ -70,30 +70,6 @@ Results:
   - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders"
   - the _key_ is the path of that source file
 
-## _`completions`_
-
-Args:
-- the current source file path
-- the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
-
-Results:
-- a list of symbol items like returned also above in `defs-in-file` and `defs-search`, with these extra considerations:
-  - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
-  - **children**: not populated (or even computed)
-  - **detail** to be augmented with the `import` where pertinent
-
-**Everything that's in scope:**
-- any top-level def/decl in the current file
-- ancestor locals in scope
-- any made available by the file's existing `import`s
-- bonus stretch: any from any not-yet-imported `std/*` with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
-- might also want to include any `'quoted-ident` already occurring somewhere in this source file (since one is often slinging them around repeatedly)
-  - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
-
-**On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
-- all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
-- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
-
 ## _`lookup`_
 
 Args:
@@ -125,6 +101,30 @@ Results:
 Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), internally (`ide`-side) this might perhaps be done as a specialized "list references" (see above, eg. `(lookup path pos 'refs)`) to look up refs _only_ in the current file but not the rest of the codebase.
 
 (Other non-Lispy language servers use it also for such situations as highlighting the func or loop of the current `break` / `continue` / `return` but does not seem applicable to us. But _if_ other, non-occurrence "highlight ideas" should ever come up, would want to rename this to eg. `highlighting`. =)
+
+## _`completions`_
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
+
+Results:
+- a list of symbol items like returned also above in `defs-in-file` and `defs-search`, with these extra considerations:
+  - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
+  - **children**: not populated (or even computed)
+  - **detail** to be augmented with the `import` where pertinent
+
+**Everything that's in scope:**
+- any top-level def/decl in the current file
+- ancestor locals in scope
+- any made available by the file's existing `import`s
+- bonus stretch: any from any not-yet-imported `std/*` with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
+- might also want to include any `'quoted-ident` already occurring somewhere in this source file (since one is often slinging them around repeatedly)
+  - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
+
+**On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
+- all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
+- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
 
 ## _`doc-tips`_
 
