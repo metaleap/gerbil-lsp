@@ -4,7 +4,7 @@ All namings used here are provisional / placeholder identifiers, not me prescrib
 
 # 1. Workspace syncing
 
-Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, such that it can update its internal state about the codebase-in-session:
+Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session:
 
 Necessary:
 
