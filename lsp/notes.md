@@ -51,8 +51,8 @@ Desirable fields:
   - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted where it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
-  - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
-  - **detail**: could be, for example:
+  - **description**: `#f` or `""` or existing markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any
+  - **detail**: `#f` or `""` or could be, for example:
     - signature or type annotation (note: put syntax and idents inside markdown inline-code tag (`` ` ``) or Scheme-syntax tag (`` ```scheme ``), such that eg. `*myglobal*`  does not falsely render as an italic, de-asterisk'd "_myglobal_")
     - or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
@@ -191,6 +191,21 @@ The callback func passed in by the caller would receive:
 Of note, the list-of-issues for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-issues, empty or not.
 
 **The challenge:** a change in any one source file may well affect its direct or indirect (!) importers and those, too, should also be re-analyzed and have their list-of-issues re-announced over the callback arg (one such call per file).
+
+## _`signatures`_
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+
+Results:
+- a list of zero-or-more signature-info structs containing:
+  - **signature**: the syntactical form clarifying the signature, ie. `(name arg arg)` or `(name arg . rest)` etc.
+  - **description**: the same as first described above in `defs-in-file`
+
+Call forms might not only be on resolved lambda-valued defs but also macros and native/primitive/special forms. Might be neat to have 'em all! But func calls of course the most important.
+
+**Should (imho) return empty list whenever** the form _at current position_ is not a call, even if ancestor forms are — because in Lisp/Scheme they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form.
 
 # 3. Bonus language intel (icing on the cake)
 
