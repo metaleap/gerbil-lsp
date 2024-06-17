@@ -5,7 +5,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 **Paths:** for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
 
 **Language intel quick jumps:**
-- _Essential_, in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
+- _Essentials_, in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
 - _Bonus_: [ast-parents](#ast-parents), [TODO: callers], [TODO: callees], [TODO: super-types], [TODO: sub-types]
 
 # 1. Workspace syncing
