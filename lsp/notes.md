@@ -120,11 +120,11 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a list of zero more location _ranges_ (ie. start-end-pair) in the current file
+- a list of zero or more location _ranges_ (ie. start-end-pair) in the current file
 
-Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), this will perhaps be a specialized list-references (see above, eg. `lookup path pos 'refs`) to look up refs _only_ in the current file.
+Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), internally (`ide`-side) this might perhaps be done as a specialized "list references" (see above, eg. `(lookup path pos 'refs)`) to look up refs _only_ in the current file but not the rest of the codebase.
 
-Other non-Lispy languages use it also for such situations as highlighting the func or loop of the current `break` / `continue` / `return` but does not seem applicable to us. (But _if_ other, non-occurrence "highlight ideas" should ever come up, would want to rename this to eg. `highlights`. =)
+(Other non-Lispy language servers use it also for such situations as highlighting the func or loop of the current `break` / `continue` / `return` but does not seem applicable to us. But _if_ other, non-occurrence "highlight ideas" should ever come up, would want to rename this to eg. `highlighting`. =)
 
 ## _`doc-tips`_
 
@@ -133,10 +133,10 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- optionally, if easy to do, the _range_ (start-and-end-pos in the source file) of the actual form / symbol that the doc-tips apply to
 - a list of markdown or plain-text info strings, which may for example surface:
   - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a string literal: the byte length and rune length (can be handy)
   - if a fixnum or char literal: the value in the base of decimal, octal, hex
   - any other infos already lying around, human-language phrased
+- the _range_ (start-and-end-pos in the source file) of the actual form / symbol that the above doc-tips apply to
