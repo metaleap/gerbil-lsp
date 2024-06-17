@@ -5,8 +5,8 @@ From the LSP vantage, functionality that'll be desirable for `std/ide` to expose
 **Paths:** for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
 
 **Language intel quick jumps:**
-- MVP in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
-- Bonus: [ast-parents](#ast-parents)
+- _Essential_, in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
+- _Bonus_: [ast-parents](#ast-parents), [TODO: callers], [TODO: callees], [TODO: super-types], [TODO: sub-types]
 
 # 1. Workspace syncing
 
@@ -28,7 +28,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 **All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho), whether that's LSP clients / editors (they do that already) or any other `ide` consumers.
 
-# 2. MVP language intel
+# 2. Language intel: the essentials
 
 **These features are "sorted in order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
@@ -211,7 +211,7 @@ Call forms might not only be on resolved lambda-valued defs but also macros and 
 
 **Should (imho) return empty list whenever** the form _at current position_ is not a call, even if ancestor forms are — because in Lisp/Scheme they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form.
 
-# 3. Bonus language intel (icing on the cake)
+# 3. Language intel: bonus / icing on the cake
 
 ## _`ast-parents`_
 
