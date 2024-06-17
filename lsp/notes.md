@@ -138,7 +138,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a list of markdown or plain-text info strings, which could for example surface:
+- a list of markdown info strings, which could for example surface:
   - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a string literal: the byte length and rune length (can be handy)
