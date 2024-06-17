@@ -23,24 +23,34 @@ Optional, if it makes sense for `ide`:
 
 # Actual Language Intel
 
+These features are roughly ordered such that work on later ones will likely (best-guess basis) benefit from / build on / leverage work already done for earlier ones.
+
+**Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start position and end position).
+  - Handling those (vs. perhaps underlying byte-buffer indices that AST nodes refer to on the `ide`) may need to take into account different EOL markers in the source file (`\r\n` or `\n` or `\r`) and/or the file encoding.
+  - The `lsp` user of `ide` will receive, [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations need doing, we need to decide where they're done and what `ide` itself mandates to its callers (if anything).
+
 ## defs-in-file
 
 Inputs:
-- a single source file path.
+- a single Gerbil Scheme source file path.
 
 Results:
-- a tree hierarchy of symbol `def`s / decls in the file. The root list representing top-level symbol decls, with their local `def`s, `let`s, `using`s etc being descendant / sub-tree symbols.
+- a tree hierarchy of symbol `def`s / decls occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbols.
 
-Not just funcs and vars, but practically also macro calls starting with `def` such as `defstruct`, `defclass` etc.
+Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, interface etc.
 
 Mandatory fields:
   - **name**
+  - **children** — to make the hierarchy tree happen, zero or more direct descendant symbols (each same struct as the parent)
 
 Desirable fields:
-  - **kind**: one of `ide`-defined known-enumerants (function, var, struct, class, macro etc)
+  - **kind**: one of `ide`-defined known-enumerants (function, var, struct, class, interface, macro etc)
+    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) might be included where it makes sense (module? package? number? well, it's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description** for top-level symbols that are directly preceded by a multi-line comment (or block of single-line comments), which is itself preceded by empty line(s)?
-  - **signature** for such symbols as can be detected to have one (funcs, macros)
+  - **signature** for such symbols as can be detected to have one (funcs, macros, type-annotated vars)
+  - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
+  - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
 ### Extra nice to have:
 
