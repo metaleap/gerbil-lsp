@@ -43,7 +43,7 @@ Not just funcs and vars, but practically also all macro calls starting with `def
 
 Mandatory fields:
   - **name**
-  - **children** — to make the hierarchy tree happen, zero or more direct descendant symbols (each same struct as the parent)
+  - **children** — to make the hierarchy tree happen, zero or more direct-descendant symbol defs aka. locals (each same struct as this parent)
 
 Desirable fields:
   - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
@@ -133,10 +133,10 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a list of markdown or plain-text info strings, which may for example surface:
+- a list of markdown or plain-text info strings, which could for example surface:
   - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a string literal: the byte length and rune length (can be handy)
   - if a fixnum or char literal: the value in the base of decimal, octal, hex
-  - any other infos already lying around, human-language phrased
-- the _range_ (start-and-end-pos in the source file) of the actual form / symbol that the above doc-tips apply to
+  - any other infos / metadata already lying around for free
+- the _range_ (start-and-end-pos in the source file) of the actual form / AST node that the above doc-tips apply to
