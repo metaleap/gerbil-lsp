@@ -1,6 +1,8 @@
 From the LSP vantage, functionality that would be desirable in the `std/ide` lib, a summarized list.
 
-# Workspace syncing
+All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
+
+# 1. Workspace syncing
 
 Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, such that it can update its internal state about the codebase-in-session:
 
@@ -15,13 +17,13 @@ Necessary:
 - **source-file-changed** (this is not-yet-saved live edits — the full new buffer contents would be passed)
 - **root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would also be used for the initial-list-of-root-dirs shortly after the session starts or when a new "workspace" / project (list of root dirs) is opened in the editor
 
-Optional, if it makes sense for `ide`:
+Optional, if it makes sense for (or is of interest to) `ide`:
 
 - **source-file-saved** (the full, current file contents could be passed)
 - **source-file-opened**
 - **source-file-closed**
 
-# Actual Language Intel
+# 2. Actual Language Intel
 
 These features are roughly ordered such that work on later ones will likely (best-guess basis) benefit from / build on / leverage work already done for earlier ones.
 
@@ -55,3 +57,24 @@ Desirable fields:
 ### Extra nice to have:
 
 "Expansion" of custom `defrule`s, for example: although this [defhandler](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) macro would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
+
+## defs-search
+
+Inputs:
+- a "query" (usually incoming as substring-of or full symbol identifier)
+
+Results:
+- a hashtable / alist where:
+  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type just like above in `defs-in-file`, but with `children` empty) found in a tracked Gerbil source file existing somewhere in the currently-opened "root folders"
+  - the _key_ is the path of that source file
+
+## completions
+
+Inputs:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
+
+Results:
+- a flat list of items that include:
+  - **name**: the full name, not partial (ie if position is right after `ha` then `name` is still `hash-ref` rather than `sh-ref`)
+  - **description**: markdown doc or, for non-documented top-level defs the preceding multi-line comment or block of single-line comments
