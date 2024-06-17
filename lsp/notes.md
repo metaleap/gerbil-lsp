@@ -91,6 +91,8 @@ Args:
 Results:
 - a list of zero more "locations" (pairs of source file path and _range_)
 
+Results' source file paths _can_ include files outside the currently opened workspace aka. root folders, and _should_ include any finds in `std/*` or `gerbil/*` (presumably often somewhere in `/opt/gerbil/src`).
+
 ## _`occurrences`_
 
 Args:
@@ -120,7 +122,8 @@ Results:
 - any top-level def/decl in the current file
 - ancestor locals in scope
 - any made available by the file's existing `import`s
-- bonus stretch: any from any not-yet-imported `std/*` with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
+- bonus stretch goals:
+  - any from any not-yet-imported `std/*` / `gerbil/*` etc or workspace-local source files with an additional "import edit" to be applied in-editor to the current source (a text-edit being an (insert-text,insert-position) pair)
 - might also want to include any `'quoted-ident` already occurring somewhere in this source file (since one is often slinging them around repeatedly)
   - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
 
@@ -150,7 +153,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- if nothing to rename at the position: `#f`
+- if neither a def nor a ref (to a def located somewhere _inside_ the workspace) at the position: `#f`
 - else: the _range_ of the identifier at the position
 
 ## _`rename`_
@@ -166,4 +169,4 @@ Results:
 - `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!)
 - else, a hash-table or alist where for each entry:
   - the _key_ is the source file path that the _value_ applies to
-  - the _value_ is a list of _ranges_ representing occurrences in that file of the old name (that _are_ references to the def-being renamed! not shadowings etc)
+  - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed
