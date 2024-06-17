@@ -6,7 +6,7 @@ Paths: for simplicity's sake, perhaps all paths consumed or produced `ide`-side 
 
 # 1. Workspace syncing
 
-Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session:
+Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session, (re)analyse changed / new files etc:
 
 Necessary:
 
