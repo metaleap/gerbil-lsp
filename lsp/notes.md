@@ -47,7 +47,7 @@ Mandatory fields:
   - **children** — to make the hierarchy tree happen, zero or more direct descendant symbols (each same struct as the parent)
 
 Desirable fields:
-  - **kind**: one of `ide`-defined known-enumerants (e.g. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
+  - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be included if it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
@@ -97,11 +97,41 @@ Results:
 Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
-- a "lookup kind": one of `ide`-defined known-enumerants
+- a "lookup kind": one of `ide`-defined known-enumerants:
   - at least:
     - `'def` (go to definition) — be sure to catch locals or file-level defs shadowing imported ones
     - `'refs` (list references) — to work both on a def _and_ on a ref _to_ some def
-  - optionally, if exciting-and-feasible: `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident), `'iface-impls` (known implicit implementations of current interface), `'ifaces-impld` (interfaces that current class is known to implicitly implement), any others later on if & as they come to mind in the community
+  - optionally, if exciting-and-feasible:
+    - `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident)
+    - `'iface-impls` (known implicit implementations of current interface)
+    - `'ifaces-impld` (interfaces that current class is known to implicitly implement)
+    - any others later on if & as they come to mind in the community
 
 Results:
 - a flat list of zero more "locations" (pair of source file path and _range_, ie. start-end-pair)
+
+## _`occurrences`_
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+Results:
+- a flat list of zero more location _range_s (ie. start-end-pair) in the current file
+
+Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), this will perhaps be a specialized list-references (see above, eg. `lookup path pos 'refs`) to look up refs _only_ in the current file.
+
+Other non-Lispy languages use it also for such situations as highlighting the func or loop of the current `break` / `continue` / `return` but does not seem applicable to us. (But _if_ other, non-occurrence "highlight ideas" should ever come up, would want to rename this to eg. `highlights`. =)
+
+## _`doc-tips`_
+
+Args:
+- the current source file path
+- the current _position_ (see note at intro of part 2. above)
+Results:
+- optionally, if easy to do, the _range_ (start-and-end-pos in the source file) of the actual form / symbol that the doc-tips apply to
+- a list of markdown or plain-text info strings, which may for example surface:
+  - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
+  - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
+  - if a string literal: the byte length and rune length (can be handy)
+  - if a fixnum or char literal: the value in the base of decimal, octal, hex
+  - any other infos already lying around, human-language phrased
