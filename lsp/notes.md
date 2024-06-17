@@ -2,10 +2,6 @@ From the LSP vantage, functionality that would be desirable in the `std/ide` lib
 
 All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
 
-<span><style type="text/css">
-  h2 { color: #ccc; background-color: #777; }
-</style></span>
-
 # 1. Workspace syncing
 
 Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session:
@@ -35,7 +31,7 @@ These features are roughly ordered such that work on later ones will likely (bes
   - Handling those (vs. perhaps underlying byte-buffer indices that AST nodes refer to on the `ide`) may need to take into account different EOL markers in the source file (`\r\n` or `\n` or `\r`) and/or the file encoding.
   - The `lsp` user of `ide` will receive, [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations need doing, we need to decide where they're done and what `ide` itself mandates to its callers (if anything).
 
-## defs-in-file
+## `defs-in-file`
 
 Args:
 - a single Gerbil Scheme source file path
@@ -63,7 +59,7 @@ Desirable fields:
 
 "Expansion" of custom `defrule`s, for example: although this [defhandler](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) macro would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
 
-## defs-search
+## `defs-search`
 
 Args:
 - a "query" (usually incoming as substring of, or full, symbol identifier)
@@ -73,7 +69,7 @@ Results:
   - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders"
   - the _key_ is the path of that source file
 
-## completions
+## `completions`
 
 Args:
 - the current source file path
@@ -96,7 +92,7 @@ Results:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
 
-## lookup
+## `lookup`
 
 Args:
 - the current source file path
