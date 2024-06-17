@@ -5,12 +5,16 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 **Paths:** for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
 
 **Language intel quick jumps:**
-- _Essentials_, in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
-- _Bonus_: [ast-parents](#ast-parents), [TODO: callers], [TODO: callees], [TODO: super-types], [TODO: sub-types]
+- [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
+  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
+- [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
+  - [ast-parents](#ast-parents), [TODO: callers], [TODO: callees], [TODO: super-types], [TODO: sub-types]
 
 # 1. Workspace syncing
 
-Since there'll be a sort of an _"ongoing / long-lived interpreter session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session, (re)analyse changed / new files etc:
+**No file-watchings in `ide` or `lsp`!**
+
+Since there'll be a sort of an _"ongoing / long-lived interpreter(ish) session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session, (re)analyse changed / new files etc:
 
 Necessary:
 
@@ -248,3 +252,8 @@ To clarify by example:
         }
       }
       ```
+
+## _`callers`_
+
+Args:
+-
