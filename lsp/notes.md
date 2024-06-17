@@ -166,7 +166,7 @@ Args:
 - the new name (throw if syntactically invalid ident)
 
 Results:
-- `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!) or if `can-rename` would `#f` for these args
+- `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!) or if the above `can-rename` would `#f` for these args
 - else, a hash-table or alist where for each entry:
   - the _key_ is the source file path that the _value_ applies to
   - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
