@@ -8,7 +8,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 - [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
   - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
 - [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
-  - [ast-parents](#ast-parents), [TODO: callers], [TODO: callees], [TODO: super-types], [TODO: sub-types]
+  - [ast-parents](#ast-parents), [callers](#callers), [callees](#callees), [super-types], [sub-types]
 
 # 1. Workspace syncing
 
@@ -37,7 +37,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 **These features are "sorted in order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
-  - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) may need to take into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
+  - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) requires taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
   - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, we need to align on this — or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
 
 ## _`defs-in-file`_
@@ -58,10 +58,10 @@ Mandatory fields:
   - **children** — to make the hierarchy tree happen, zero or more direct-descendant symbol defs aka. locals (each same struct as this parent)
 
 Desirable fields:
-  - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
+  - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro`, `'other` etc)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted where it makes sense (that's `ide`'s call though)
-  - **deprecated** bool, if there's a "defacto-standard" notation for that
-  - **description**: `#f` or `""` or existing markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any
+  - **deprecated** bool (if there's a "defacto standard" notation for that in Gerbil)
+  - **description**: `#f` or `""` or existing markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
   - **detail**: `#f` or `""` or could be a non-markdown plain-text of extra information, for example:
     - signature or type name, if known
     - failing both, for locals, name(s) of parent(s)
@@ -106,7 +106,9 @@ Args:
 Results:
 - a list of zero more "locations" (pairs of source file path and _range_)
 
-Results' source file paths _can_ include files outside the currently opened workspace aka. root folders, and _should_ include any finds in `std/*` or `gerbil/*` (presumably often somewhere in `/opt/gerbil/src`).
+Results' source file paths _can_ include files outside the currently opened workspace / "root folders", technically:
+- so for `'def`, _should_ include any find(s) in `std/*`, `gerbil/*` etc (paths located presumably usually somewhere in `/opt/gerbil/src`)
+- whereas for `'refs`, even if the def-referred-to-at-position is in `std/*`, `gerbil/*` etc., we'll only want such refs to it that are located in the currently opened workspace / "root folders" (to not also have to stare at 100s of refs from `std/*`, `gerbil/*` etc.)
 
 ## _`occurrences`_
 
@@ -273,3 +275,15 @@ To clarify by example:
         }
       }
       ```
+
+## _`callers`_
+
+[Demo scenario](https://i.sstatic.net/AxfS2.gif)
+
+...todo
+
+## _`callees`_
+
+[Demo scenario](https://i.sstatic.net/HKU3h.png)
+
+...todo
