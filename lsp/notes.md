@@ -34,10 +34,11 @@ These features are roughly ordered such that work on later ones will likely (bes
 ## defs-in-file
 
 Inputs:
-- a single Gerbil Scheme source file path.
+- a single Gerbil Scheme source file path
+- a bool whether full tree hierarchy is wanted or just flat list of top-level-defs
 
 Results:
-- a tree hierarchy of symbol `def`s / decls occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbols.
+- a tree hierarchy of symbol `def`s / decls occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbols (only computed and populated if the abovementioned bool arg wants it).
 
 Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, interface etc.
 
@@ -47,9 +48,9 @@ Mandatory fields:
 
 Desirable fields:
   - **kind**: one of `ide`-defined known-enumerants (function, var, struct, class, interface, macro etc)
-    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) might be included where it makes sense (module? package? number? well, it's `ide`'s call though)
+    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be included if it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
-  - **description** for top-level symbols that are directly preceded by a multi-line comment (or block of single-line comments), which is itself preceded by empty line(s)?
+  - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
   - **detail**: can be signature or type annotation or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
@@ -65,7 +66,7 @@ Inputs:
 
 Results:
 - a hashtable / alist where:
-  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type just like above in `defs-in-file`, but with `children` empty) found in a tracked Gerbil source file existing somewhere in the currently-opened "root folders"
+  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type just like above in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing somewhere in the currently-opened "root folders"
   - the _key_ is the path of that source file
 
 ## completions
@@ -75,8 +76,17 @@ Inputs:
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
 
 Results:
-- a flat list of items that include:
-  - **name**: the full name, not partial (ie if position is right after `ha` then `name` is still `hash-ref` rather than `sh-ref`)
-  - **description**: markdown doc or, for non-documented top-level defs the preceding multi-line comment or block of single-line comments
-  - **detail**: can be signature or type annotation or whatever else that's "good to know" and pertinent-to plus available-for the item
-  -
+- a flat list of symbol items like returned also above in `defs-in-file` and `defs-search`, with these extra considerations:
+  - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
+  - **children**: not populated (or even computed)
+  - **detail** to be augmented with the `import` where pertinent
+
+**Scope:**
+- any def/decl in the current file
+- any made available via `import`s
+- bonus stretch: any from any not-yet-imported `std/*` (or listed project dependency — if there's a package-management thing yet) with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
+- on top of the usual defs/decls, might want to include any `'quoted-ident` already occurring somewhere in the source file (since one is often slinging them around repeatedly), of course still only if suitable in terms of text-to-the-left-of-position
+
+**On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
+- all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
+- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own completion-item right after `mystruct`), ie. "there _is_ no dot-completion"
