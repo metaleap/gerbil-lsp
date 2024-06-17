@@ -42,6 +42,8 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 ## _`defs-in-file`_
 
+[Demo scenario 1](https://user-images.githubusercontent.com/12821956/57658641-7fb9bf80-7594-11e9-8bdc-b86118acdf48.png) · [Demo scenario 2](https://code.visualstudio.com/assets/docs/editor/editingevolved/breadcrumb-symbol-dropdown.png)
+
 Args:
 - a single Gerbil Scheme source file path
 - a bool whether full tree hierarchy is wanted or just flat list of top-level-defs
@@ -72,6 +74,8 @@ Desirable fields:
 
 ## _`defs-search`_
 
+[Demo scenario](https://user-images.githubusercontent.com/8097890/185075014-e113ed17-1849-4a8c-ba5d-a6bbc3431cdf.png)
+
 Args:
 - a "query": usually the substring of a (or the full) def name
 
@@ -81,6 +85,8 @@ Results:
   - the _value_ is a flat list (no tree hierarchy) of all the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in that source file
 
 ## _`lookup`_
+
+[Demo scenario](https://user-images.githubusercontent.com/11874914/28750773-d4d38782-74f4-11e7-98a0-a6d4b041e59c.png)
 
 Args:
 - the current source file path
@@ -102,6 +108,8 @@ Results:
 Results' source file paths _can_ include files outside the currently opened workspace aka. root folders, and _should_ include any finds in `std/*` or `gerbil/*` (presumably often somewhere in `/opt/gerbil/src`).
 
 ## _`occurrences`_
+
+[Demo scenario](https://i.sstatic.net/3gNYO.png)
 
 Args:
 - the current source file path
