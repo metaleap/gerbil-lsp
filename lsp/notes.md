@@ -47,7 +47,7 @@ Mandatory fields:
 
 Desirable fields:
   - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro` etc)
-    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be included if it makes sense (that's `ide`'s call though)
+    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted where it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description**: markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments
   - **detail**: could be, for example:
@@ -110,7 +110,7 @@ Args:
     - any others later on if & as they come to mind in the community
 
 Results:
-- a flat list of zero more "locations" (pair of source file path and _range_, ie. start-end-pair)
+- a flat list of zero more "locations" (pairs of source file path and _range_)
 
 ## _`occurrences`_
 
@@ -118,7 +118,7 @@ Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
 Results:
-- a flat list of zero more location _range_s (ie. start-end-pair) in the current file
+- a flat list of zero more location _ranges_ (ie. start-end-pair) in the current file
 
 Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), this will perhaps be a specialized list-references (see above, eg. `lookup path pos 'refs`) to look up refs _only_ in the current file.
 
