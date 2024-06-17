@@ -58,12 +58,12 @@ Desirable fields:
 
 **Extra nice to have:**
 
-"Expansion" of custom `defrule`s, for example: although this [defhandler](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) macro would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
+"Expansion" of custom `defrule`s, for example: although [this 'defhandler' defrule](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _uses_ such as [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as symbols in _those_ source files
 
 ## _`defs-search`_
 
 Args:
-- a "query" (usually incoming as substring of, or full, symbol identifier)
+- a "query": usually the substring of a (or the full) def name
 
 Results:
 - a hashtable / alist where:
