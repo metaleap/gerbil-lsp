@@ -25,11 +25,11 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 # 2. Actual Language Intel
 
-These features are roughly ordered such that work on later ones will likely (best-guess basis) benefit from / build on / leverage work already done for earlier ones.
+These features are **"sorted in order of dev dependency"** such that work on later ones will likely (best-guess basis) _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
-**Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start position and end position).
+**Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
   - Handling those (vs. perhaps underlying byte-buffer indices that AST nodes refer to on the `ide`) may need to take into account different EOL markers in the source file (`\r\n` or `\n` or `\r`) and/or the file encoding.
-  - The `lsp` user of `ide` will receive, [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations need doing, we need to decide where they're done and what `ide` itself mandates to its callers (if anything).
+  - The `lsp` user of `ide` itself receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, we need to align on this — or alternatively, `ide` could adopt this "utf-16 position encoding" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
 
 ## _`defs-in-file`_
 
