@@ -153,7 +153,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- if neither a def nor a ref (to a def located somewhere _inside_ the workspace) at the position: `#f`
+- `#f` if neither a def nor a ref (to a def located somewhere _inside_ the workspace) at the position
 - else: the _range_ of the identifier at the position
 
 ## _`rename`_
@@ -166,7 +166,7 @@ Args:
 - the new name (throw if syntactically invalid ident)
 
 Results:
-- `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!)
+- `#f` or `(void)` if new name is identical to old name (clients will likely check usually, but never trust clients!) or if `can-rename` would `#f` for these args
 - else, a hash-table or alist where for each entry:
   - the _key_ is the source file path that the _value_ applies to
-  - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed
+  - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
