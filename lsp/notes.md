@@ -30,7 +30,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 - **on-source-file-opened**
 - **on-source-file-closed**
 
-**All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho), whether that's LSP clients / editors (they do that already) or any other `ide` consumers.
+**All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho) and hence "client-side", whether that's LSP-speaking text editors (they do that already) or any other `ide` consumers.
 
 # 2. Language intel: the essentials
 
