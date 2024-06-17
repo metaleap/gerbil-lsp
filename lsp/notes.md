@@ -62,11 +62,11 @@ Desirable fields:
 ## defs-search
 
 Inputs:
-- a "query" (usually incoming as substring-of or full symbol identifier)
+- a "query" (usually incoming as substring of, or full, symbol identifier)
 
 Results:
 - a hashtable / alist where:
-  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type just like above in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing somewhere in the currently-opened "root folders"
+  - the _value_ is a flat list (no tree hierarchy) of the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, but with `children` neither populated nor even computed) found in a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders"
   - the _key_ is the path of that source file
 
 ## completions
@@ -83,9 +83,10 @@ Results:
 
 **Scope:**
 - any def/decl in the current file
-- any made available via `import`s
-- bonus stretch: any from any not-yet-imported `std/*` (or listed project dependency — if there's a package-management thing yet) with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
-- on top of the usual defs/decls, might want to include any `'quoted-ident` already occurring somewhere in the source file (since one is often slinging them around repeatedly), of course still only if suitable in terms of text-to-the-left-of-position
+- any already available via the file's existing `import`s
+- bonus stretch: any from any not-yet-imported `std/*` with an additional "import edit" to apply in-editor to the source (a text-edit being an insert-text,insert-position pair)
+- might also want to include any `'quoted-ident` already occurring somewhere in this source file (since one is often slinging them around repeatedly)
+  - of course, like all other completions, only if suitable in terms of the current typing context (text to the left of position)
 
 **On "dot completions":** since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
