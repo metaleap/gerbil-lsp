@@ -38,7 +38,7 @@ Optional, if it makes sense for (or is of interest to) `ide`:
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
   - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) may need to take into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
-  - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, we need to align on this — or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
+  - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, we need to align on this — or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
 
 ## _`defs-in-file`_
 
@@ -62,8 +62,9 @@ Desirable fields:
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted where it makes sense (that's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description**: `#f` or `""` or existing markdown doc or, for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any
-  - **detail**: `#f` or `""` or could be, for example:
-    - signature or type annotation (note: put syntax and idents inside markdown inline-code tag (`` ` ``) or Scheme-syntax tag (`` ```scheme ``), such that eg. `*myglobal*`  does not falsely render as an italic, de-asterisk'd "_myglobal_")
+  - **detail**: `#f` or `""` or could be a non-markdown plain-text of extra information, for example:
+    - signature or type name, if known
+    - failing both, for locals, name(s) of parent(s)
     - or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
