@@ -124,6 +124,8 @@ Usually used by editors to highlight all occurrences of the current ident (wheth
 
 ## _`completions`_
 
+[Demo scenario](https://code.visualstudio.com/assets/docs/nodejs/working-with-javascript/lodash-typings.png)
+
 Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
@@ -148,6 +150,8 @@ Results:
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`), ie. "there _is_ no 'dot-completion' (special handling on dot)"
 
 ## _`doc-tips`_
+
+[Demo scenario](https://user-images.githubusercontent.com/33861896/91145912-78012a00-e6b6-11ea-9e98-3dd8d04e89c6.png)
 
 Args:
 - the current source file path
@@ -174,6 +178,8 @@ Results:
 
 ## _`rename`_
 
+[Demo scenario](https://code.visualstudio.com/assets/docs/editor/refactoring/rename.png)
+
 Workspace-wide def rename.
 
 Args:
@@ -188,6 +194,8 @@ Results:
   - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
 
 ## _`on-file-issues-changed`_
+
+[Demo scenario 1](https://code.visualstudio.com/assets/docs/editor/editingevolved/errors.png) · [Demo scenario 2](https://code.visualstudio.com/assets/docs/editor/editingevolved/errorsinline.png)
 
 Args:
 - a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably)
@@ -210,6 +218,8 @@ Of note, the list-of-issues for a file may be empty upon its re-analysis when pr
 
 ## _`signatures`_
 
+[Demo scenario](https://user-images.githubusercontent.com/1078012/43570032-3b1b4a30-9631-11e8-962b-73bb491ccaf2.png)
+
 Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
@@ -226,6 +236,8 @@ Call forms might not only be on resolved lambda-valued defs but also macros and 
 # 3. Language intel: bonus / icing on the cake
 
 ## _`ast-parents`_
+
+[Demo scenario](https://code.visualstudio.com/assets/docs/editor/codebasics/expandselection.gif)
 
 Args:
 - the current source file path
@@ -260,8 +272,3 @@ To clarify by example:
         }
       }
       ```
-
-## _`callers`_
-
-Args:
--
