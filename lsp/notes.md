@@ -104,8 +104,9 @@ Args:
     - `'refs` (list references) — whether we're _on_ a def, or on a ref _to_ some def
   - optionally, if exciting-and-feasible:
     - `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident)
-    - `'iface-impls` (known implicit implementations of current interface)
-    - `'ifaces-impld` (interfaces that current class is known to implicitly implement)
+    - `'iface-impl`
+      - if on interface or interface method: known implicit implementations of that
+      - if on class or class method: interfaces or interface methods implicitly implemented by that
     - any others later on if & as they come to mind in the community
 
 Results:
