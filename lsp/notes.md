@@ -50,7 +50,7 @@ Desirable fields:
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) might be included where it makes sense (module? package? number? well, it's `ide`'s call though)
   - **deprecated** bool, if there's a "defacto-standard" notation for that
   - **description** for top-level symbols that are directly preceded by a multi-line comment (or block of single-line comments), which is itself preceded by empty line(s)?
-  - **signature** for such symbols as can be detected to have one (funcs, macros, type-annotated vars)
+  - **detail**: can be signature or type annotation or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
@@ -78,3 +78,5 @@ Results:
 - a flat list of items that include:
   - **name**: the full name, not partial (ie if position is right after `ha` then `name` is still `hash-ref` rather than `sh-ref`)
   - **description**: markdown doc or, for non-documented top-level defs the preceding multi-line comment or block of single-line comments
+  - **detail**: can be signature or type annotation or whatever else that's "good to know" and pertinent-to plus available-for the item
+  -
