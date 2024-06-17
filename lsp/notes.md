@@ -8,12 +8,9 @@ Since there'll be a sort of an _"ongoing / long-lived interpreter session on all
 
 Necessary:
 
-- **source-files-deleted** with a list of file paths
-- **source-files-created** with a list of file paths (might also trigger on file pastes, so it's not necessarily to be assumed they're empty)
-- **source-files-renamed** with a list of old-path,new-path pairs
-  - if `ide` prefers, this can be omitted, with callers representing "renames" via two consecutive calls: first _deleted_, followed by _created_
-  - even if not so omitted, it can be assumed that some clients / editors send file renames that way
-  - if file extension changes from `.ss`/`.scm`/etc. to something non-Scheme, that would mean removing it from live interp session context — perhaps another good reason to omit a special _renamed_ altogether
+- **source-files-deleted** with a list of Scheme source file paths
+- **source-files-created** with a list of Scheme source file paths (it's not necessarily to be assumed they're empty, might be on file paste or on the buffer's first Save)
+- **source-files-renamed** with a list of old-path,new-path pairs (_both_ in each pair are guaranteed by the caller to have Scheme file extensions)
 - **source-file-edited** (this is not-yet-saved live edits — the full new buffer contents would be passed — unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
 - **source-file-changed** for on-disk source file content changes, whether through Save or from _outside the editor_ (still will want to reload those into the session)
 - **root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would also be used for the initial-list-of-root-dirs shortly after the session starts or indeed just whenever a new "workspace" / project (list of root dirs) is opened in the editor
