@@ -117,6 +117,7 @@ Results:
 Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
+
 Results:
 - a flat list of zero more location _ranges_ (ie. start-end-pair) in the current file
 
@@ -129,6 +130,7 @@ Other non-Lispy languages use it also for such situations as highlighting the fu
 Args:
 - the current source file path
 - the current _position_ (see note at intro of part 2. above)
+
 Results:
 - optionally, if easy to do, the _range_ (start-and-end-pos in the source file) of the actual form / symbol that the doc-tips apply to
 - a list of markdown or plain-text info strings, which may for example surface:
