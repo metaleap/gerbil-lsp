@@ -1,11 +1,10 @@
 From the LSP vantage, functionality that'll be desirable for `std/ide` to expose.
 
-All namings used here are provisional / placeholder identifiers, not me prescribing how exports from `ide` should be called.  =)
+**Namings** used in here are just provisional / placeholder idents, not me prescribing how exports from `ide` should be called.  =)
 
-Paths: for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
+**Paths:** for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
 
-### Language intel quick jumps:
-
+**Language intel quick jumps:**
 - MVP in "presumed dev-dependency order": [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
 - Bonus: [ast-parents](#ast-parents)
 
