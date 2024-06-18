@@ -13,7 +13,7 @@
                                         (Position-line hp.position)
                                         (Position-character hp.position)
                                         (TextDocumentIdentifier-uri hp.textDocument)))
-      (debugf ">>~a<<" markdown)
+      (debugf ">>~a<<" markdown)))
       (debugf ">>>>~a<<<<" (json-object->string hp))
       (hash ("contents"
               (hash ("value" markdown)
