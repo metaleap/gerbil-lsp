@@ -1,5 +1,5 @@
-(export transport-stdio
-        transport-server-socket
+(export lsp-transport-stdio
+        lsp-transport-server-socket
         lsp-serve)
 
 (import :std/cli/getopt
@@ -10,8 +10,8 @@
         :std/text/json
         :std/net/json-rpc
         ./handling
-        ./lsp-lifecycle
-        ./lsp-lang-stuff
+        ./msgs/lifecycle
+        ./msgs/lang-intel
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 
@@ -44,15 +44,15 @@
 ; If users ever really request it, further impls could include pipes or client-socket
 ; (where LSP client is the listener) or a more refined / multi-client server-socket.
 (defstruct Transport ((reader : BufferedReader) (writer : BufferedWriter)) final: #t)
-(def (transport-stdio)
+(def (lsp-transport-stdio)
   (make-Transport (open-buffered-reader (current-input-port))
                   (open-buffered-writer (current-output-port))))
-(def (transport-server-socket addr-and-port)
+(def (lsp-transport-server-socket addr-and-port)
   (using ((srv (tcp-listen addr-and-port) :- ServerSocket)
           (sock (srv.accept) :- StreamSocket))
             ; we dont use timeouts for this kind of connection: it's long-lived & single-client
-            (make-Transport (open-buffered-reader (StreamSocket-reader sock))
-                            (open-buffered-writer (StreamSocket-writer sock)))))
+            (make-Transport (open-buffered-reader (sock.reader))
+                            (open-buffered-writer (sock.writer)))))
 
 
 (defstruct LspReqResp ((transport : Transport) json) final: #t)
@@ -69,13 +69,14 @@
         ; the below (before the `try`) never throws
         (let (ok-or-err (read-request! req))
           (if (eqv? #t ok-or-err) ; either way, we set `res.json`
-              (set! res.json (serve-json-rpc lsp-processor req.json))
+              (set! res.json (serve-json-rpc lsp-handler req.json))
               (using (err ok-or-err :- JSON-RPCError)
                 (set! res.json err #;(trivial-class->json-object err)))))
         ;; only respond to Requests, but not Notifications
+        (debugf ">>>>>>~a<<<<<<<" (class-of res.json))
         (when (hash-get req.json "id")
           (try
-            (write-response! res)
+            (write! res)
           (catch (e) ; if write throws, we are irreparably disconnected
             (errorf "=== exception raised in lsp-serve ~a" e)
             (set! done #t))))))))
@@ -95,7 +96,7 @@
       (internal-error e))))
 
 
-(def (write-response! (res : LspReqResp))
+(def (write! (res : LspReqResp))
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))

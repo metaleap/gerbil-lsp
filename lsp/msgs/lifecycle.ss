@@ -7,7 +7,7 @@
         :std/os/socket
         :std/text/json
         :std/net/json-rpc
-        ./handling)
+        ../handling)
 
 (def +server-name+        "gxlsp")
 (def +server-version+     "0.0.1")
@@ -21,10 +21,24 @@
 (def +lsp-client+ (make-LspClient #f #f #f #f #f))
 
 
+(defhandler "initialized"
+  (lambda (params)
+    (void)))
+
+
+(defhandler "shutdown"
+  (lambda (params)
+    (void)))
+
+
+(defhandler "exit"
+  (lambda (params)
+    (exit)))
+
+
 
 (defhandler "initialize"
   (lambda (params)
-    (debugf "=== initialize handler")
     (using (lsp-client +lsp-client+ :- LspClient)
       (let-hash params
         (when .$clientInfo
@@ -100,18 +114,3 @@
                                   ; ("diagnosticProvider"
                                   ;   (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
 )))))))
-
-
-(defhandler "initialized"
-  (lambda (params)
-    (void)))
-
-
-(defhandler "shutdown"
-  (lambda (params)
-    (void)))
-
-
-(defhandler "exit"
-  (lambda (params)
-    (exit)))

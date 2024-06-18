@@ -43,9 +43,9 @@
     (infof "Gerbil LSP started...")
     (def transport (cond
         (.?stdio
-          (transport-stdio))
+          (lsp-transport-stdio))
         ((and .?addr (fx>0? (string-length .?addr)))
-          (transport-server-socket .?addr))
+          (lsp-transport-server-socket .?addr))
         (else
-          (transport-stdio))))
+          (lsp-transport-stdio))))
     (lsp-serve transport)))

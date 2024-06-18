@@ -1,5 +1,6 @@
 (import :std/sugar
-        ./handling)
+        ../handling)
+
 
 (defhandler "textDocument/hover"
   (lambda (params)

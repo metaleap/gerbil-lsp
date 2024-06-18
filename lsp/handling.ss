@@ -8,18 +8,12 @@
 
 
 ;; See :std/net/json-rpc
-(def (lsp-processor method params)
-  (debugf "=== lsp-processor (~a)" method)
-  ((method-handler method) params))
+(def (lsp-handler method params)
+  (debugf "=== lsp-handler (~a)" method)
+  (let ((handler (hash-ref +handlers+ method method-not-found)))
+    (handler params)))
 
 
-;; Handlers (in ./lsp-*.ss) must return JSON-serializable objects, either an
-;; instance of the Request/Notification class they are handling OR a JSON-RPC error.
-;; Subclass JSON to be JSON-serializable.
-
-(def (method-handler method)
-  (debugf "=== method-handler")
-  (hash-ref +handlers+ method method-not-found))
-
+;; macro used by all `./msgs/*.ss` modules
 (defrule (defhandler method handler)
   (hash-put! +handlers+ method handler))
