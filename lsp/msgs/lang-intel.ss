@@ -1,9 +1,19 @@
 (import :std/sugar
-        ../handling)
+        :std/format
+        :std/logger
+        :std/text/json
+        ../handling
+        ./types)
 
 
 (defhandler "textDocument/hover"
   (lambda (params)
-    (let-hash params
+    (using (hover_params (trivial-json-object->class TextDocumentPositionParams::t params) : TextDocumentPositionParams)
+      (let (markdown (format "The hover for L**~a**,C**~a** in **~a**!"
+                                        (Position-line hover_params.position)
+                                        (Position-character hover_params.position)
+                                        (TextDocumentIdentifier-uri hover_params.textDocument)))
+      (debugf ">>~a<<" markdown)
       (hash ("contents"
-              (hash ("value" "Mark**down** _text_ with\n\n```\n(syntax \"highlighting\" 4 'u)\n```\n\nNeato!") ("kind" "markdown")))))))
+              (hash ("value" markdown)
+                    ("kind" "markdown"))))))))
