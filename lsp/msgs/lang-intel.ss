@@ -8,12 +8,13 @@
 
 (defhandler "textDocument/hover"
   (lambda (params)
-    (using (hover_params (trivial-json-object->class TextDocumentPositionParams::t params) : TextDocumentPositionParams)
+    (using (hp (trivial-json-object->class HoverParams::t params) : HoverParams)
       (let (markdown (format "The hover for L**~a**,C**~a** in **~a**!"
-                                        (Position-line hover_params.position)
-                                        (Position-character hover_params.position)
-                                        (TextDocumentIdentifier-uri hover_params.textDocument)))
+                                        (Position-line hp.position)
+                                        (Position-character hp.position)
+                                        (TextDocumentIdentifier-uri hp.textDocument)))
       (debugf ">>~a<<" markdown)
+      (debugf ">>>>~a<<<<" (json-object->string hp))
       (hash ("contents"
               (hash ("value" markdown)
                     ("kind" "markdown"))))))))
