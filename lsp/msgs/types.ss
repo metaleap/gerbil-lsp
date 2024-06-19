@@ -7,42 +7,40 @@
 
 (defclass (Position JSON)
   (line character)
+  constructor: :init!
   final: #t)
 
-(def (Position-load json-obj)
-  (using (this (new-instance Position::t) :- Position)
+(defmethod {:init! Position}
+  (lambda ((this :- Position) json-obj)
     (set! this.line (hash-get json-obj "line"))
-    (set! this.character (hash-get json-obj "character"))
-    this))
+    (set! this.character (hash-get json-obj "character"))))
 
 (defclass (TextDocumentIdentifier JSON)
   (uri)
+  constructor: :init!
   final: #t)
 
-(def (TextDocumentIdentifier-load json-obj)
-  (using (this (new-instance TextDocumentIdentifier::t) :- TextDocumentIdentifier)
-    (set! this.uri (hash-get json-obj "uri"))
-    this))
+(defmethod {:init! TextDocumentIdentifier}
+  (lambda ((this :- TextDocumentIdentifier) json-obj)
+    (set! this.uri (hash-get json-obj "uri"))))
 
 (defclass (TextDocumentPositionParams JSON)
   ( (textDocument : TextDocumentIdentifier)
     (position     : Position))
+  constructor: :init!
   final: #f)
 
-(def (TextDocumentPositionParams-load json-obj)
-  (using (this (new-instance TextDocumentPositionParams::t) :- TextDocumentPositionParams)
-    (set! this.position (Position-load (hash-get json-obj "position")))
-    (set! this.textDocument (TextDocumentIdentifier-load (hash-get json-obj "textDocument")))
-    this
-  ))
+(defmethod {:init! TextDocumentPositionParams}
+  (lambda ((this :- TextDocumentPositionParams) json-obj)
+    (set! this.position (make-Position (hash-get json-obj "position")))
+    (set! this.textDocument (make-TextDocumentIdentifier (hash-get json-obj "textDocument")))))
 
 (defclass (HoverParams TextDocumentPositionParams)
   ()
+  constructor: :init!
   final: #t)
 
-(def (HoverParams-load json-obj)
-  (using (this (new-instance HoverParams::t) :- HoverParams)
-    (set! this.position (Position-load (hash-get json-obj "position")))
-    (set! this.textDocument (TextDocumentIdentifier-load (hash-get json-obj "textDocument")))
+(defmethod {:init! HoverParams}
+  (lambda ((this :- HoverParams) json-obj)
     this
-  ))
+    ))
