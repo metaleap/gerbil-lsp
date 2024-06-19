@@ -73,7 +73,6 @@
               (using (err ok-or-err :- JSON-RPCError)
                 (set! res.json err #;(trivial-class->json-object err)))))
         ;; only respond to Requests, but not Notifications
-        (debugf ">>>>>>~a<<<<<<<" (class-of res.json))
         (when (hash-get req.json "id")
           (try
             (write! res)

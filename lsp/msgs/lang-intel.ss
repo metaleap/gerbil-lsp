@@ -6,15 +6,12 @@
         ./types)
 
 
-(defhandler "textDocument/hover"
-  (lambda (params)
-    (using (hp (trivial-json-object->class HoverParams::t params) : HoverParams)
-      (let (markdown (format "The hover for L**~a**,C**~a** in **~a**!"
-                                        (Position-line hp.position)
-                                        (Position-character hp.position)
-                                        (TextDocumentIdentifier-uri hp.textDocument)))
-      (debugf ">>~a<<" markdown)))
-      (debugf ">>>>~a<<<<" (json-object->string hp))
+(defhandler "textDocument/hover" (lambda (params)
+  (using (hp (HoverParams-load params) :- HoverParams)
+    (let (markdown (format "The hover for L**~a**,C**~a** in **~a**!"
+                              (Position-line hp.position)
+                              (Position-character hp.position)
+                              (TextDocumentIdentifier-uri hp.textDocument)))
       (hash ("contents"
-              (hash ("value" markdown)
+              (hash ("^value" markdown)
                     ("kind" "markdown"))))))))
