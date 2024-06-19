@@ -42,5 +42,5 @@
 
 (defmethod {:init! HoverParams}
   (lambda ((this :- HoverParams) json-obj)
-    this
+    (void)
     ))
