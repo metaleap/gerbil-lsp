@@ -72,13 +72,17 @@
               (set! res.json (serve-json-rpc lsp-handler req.json))
               (using (err ok-or-err :- JSON-RPCError)
                 (set! res.json err #;(trivial-class->json-object err)))))
-        ;; only respond to Requests, but not Notifications
-        (when (hash-get req.json "id")
-          (try
-            (write! res)
-          (catch (e) ; if write throws, we are irreparably disconnected
+
+        ; if any writes throw, we are irreparably disconnected
+        (try
+          ; only respond to Requests, but not Notifications
+          (when (hash-get req.json "id")
+            (write! res))
+          ; send out requests that have piled up, if any
+          ; TODO
+          (catch (e)
             (errorf "=== exception raised in lsp-serve ~a" e)
-            (set! done #t))))))))
+            (set! done #t)))))))
 
 
 (def (read-request! (req : LspReqResp))
@@ -95,12 +99,12 @@
       (internal-error e))))
 
 
-(def (write! (res : LspReqResp))
+(def (write! (msg : LspReqResp))
   (def Content-Length (string->bytes "Content-Length: "))
   (def (content-length buf)
     (string->bytes (number->string (u8vector-length buf))))
-  (using ((obuf (Transport-writer res.transport) :- BufferedWriter))
-    (let ((out (json-object->bytes res.json)))
+  (using ((obuf (Transport-writer msg.transport) :- BufferedWriter))
+    (let ((out (json-object->bytes msg.json)))
       (debugf "=== Response ~a" (bytes->string out))
       ;; Headers
       (obuf.write Content-Length)

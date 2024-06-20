@@ -21,7 +21,7 @@
   final: #t)
 
 (defmethod {:init! TextDocumentIdentifier}
-  (lambda ((this :- TextDocumentIdentifier) json-obj)
+  (lambda (this json-obj)
     (set! this.uri (hash-get json-obj "uri"))))
 
 (defclass (TextDocumentPositionParams JSON)

@@ -6,7 +6,7 @@
         ./types)
 
 
-(defhandler "textDocument/hover" (lambda (params)
+(lsp-handle "textDocument/hover" (lambda (params)
   (using (hp (make-HoverParams params) :- HoverParams)
     (let (markdown (format "Da hover for L**~a**,C**~a** in **~a**!"
                               (Position-line hp.position)

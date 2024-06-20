@@ -165,9 +165,10 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a list of markdown info strings, which could for example surface:
+- a list of markdown info strings, which might for example contextually surface:
   - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
+  - if a macro ref: the expansion of that macro call as a markdown `` ```scheme `` syntax block
   - if a string literal: the byte length and rune length (can be handy)
   - if a fixnum or char literal: the value in the base of decimal, octal, hex
   - any other infos / metadata already lying around for free

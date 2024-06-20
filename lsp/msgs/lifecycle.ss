@@ -21,23 +21,17 @@
 (def +lsp-client+ (make-LspClient #f #f #f #f #f))
 
 
-(defhandler "initialized"
+(lsp-handle "shutdown"
   (lambda (params)
     (void)))
 
 
-(defhandler "shutdown"
-  (lambda (params)
-    (void)))
-
-
-(defhandler "exit"
+(lsp-handle "exit"
   (lambda (params)
     (exit)))
 
 
-
-(defhandler "initialize"
+(lsp-handle "initialize"
   (lambda (params)
     (using (lsp-client +lsp-client+ :- LspClient)
       (let-hash params
@@ -114,3 +108,11 @@
                                   ; ("diagnosticProvider"
                                   ;   (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
 )))))))
+
+
+(lsp-handle "initialized"
+  (lambda (params)
+    (lsp-req! "workspace/workspaceFolders" (void)
+      (lambda (workspace-folders)
+        (debugf ">>>>>WSFs<<<<<~a>>>>>>" workspace-folders)
+        (void)))))
