@@ -69,29 +69,28 @@
       (def done #f)
       (while (not done)
         (let (ok-or-err (read-msg! incoming))
-          (if (not (eqv? #t ok-or-err)) ; either way, we set `res.json`
-            ; received an error message
-            (using (err ok-or-err :- JSON-RPCError)
-              (set! outgoing.json err #;(trivial-class->json-object err)))
-            ; else, received a normal message
-            (begin
-              (if (hash-key? incoming.json "method")
+          (let ((msg-id (hash-get incoming.json "id"))
+                (msg-method (hash-get incoming.json "method")))
+            (if (not (eqv? #t ok-or-err)) ; either way, we set `res.json`
+              ; received an error message
+              (using (err ok-or-err :- JSON-RPCError)
+                (set! outgoing.json err #;(trivial-class->json-object err)))
+              ; else, received a normal message
+              (if msg-method
                 ; msg is an incoming request or notification
                 (set! outgoing.json (serve-json-rpc lsp-handler incoming.json))
                 ; else, msg is an incoming response
-                (begin
-                  (let (req-id (hash-get incoming.json "id"))
-                    (let (handler (hash-get +pending-reqs+ req-id))
-                      (when handler
-                        (hash-remove! +pending-reqs+ req-id)
-                        (try
-                          (handler (hash-get incoming.json "result"))
-                          (catch (e)
-                            (debugf "response handler failed on response '~a': ~a"
-                                      (json-object->string incoming.json) e)))))))))))
+                (let (handler (hash-get +pending-reqs+ msg-id))
+                  (when handler
+                    (hash-remove! +pending-reqs+ msg-id)
+                    (try
+                      (handler (hash-get incoming.json "result"))
+                      (catch (e)
+                        (debugf "response handler failed on response '~a': ~a"
+                                  (json-object->string incoming.json) e)))))))))
         ; if any writes throw, we are irreparably disconnected
         (try
-          ; only respond to Requests, but not Notifications
+          ; only respond to Requests, but not Notifications or Responses
           (when (hash-get incoming.json "id")
             (write-msg! outgoing))
           ; send out requests that have piled up, if any
