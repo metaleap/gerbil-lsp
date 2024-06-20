@@ -52,7 +52,7 @@
   constructor: :init!
   final: #f)
 
-(defmethod {:init! WorkspaceFolder
+(defmethod {:init! WorkspaceFolder}
   (lambda (this json-obj)
     (set! this.name (hash-get json-obj "name"))
     (set! this.uri (hash-get json-obj "uri"))))
