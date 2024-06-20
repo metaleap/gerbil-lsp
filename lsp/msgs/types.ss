@@ -9,6 +9,8 @@
   ( line
     character)
   constructor: :init!
+  equal: #t
+  print: #t
   final: #t)
 
 (defmethod {:init! Position}
@@ -19,6 +21,8 @@
 (defclass (TextDocumentIdentifier JSON)
   (uri)
   constructor: :init!
+  equal: #t
+  print: #t
   final: #t)
 
 (defmethod {:init! TextDocumentIdentifier}
@@ -29,6 +33,8 @@
   ( (textDocument : TextDocumentIdentifier)
     (position     : Position))
   constructor: :init!
+  equal: #t
+  print: #t
   final: #f)
 
 (defmethod {:init! TextDocumentPositionParams}
@@ -39,6 +45,8 @@
 (defclass (HoverParams TextDocumentPositionParams)
   ()
   constructor: :init!
+  equal: #t
+  print: #t
   final: #t)
 
 (defmethod {:init! HoverParams}
@@ -50,6 +58,8 @@
   ( uri
     name)
   constructor: :init!
+  equal: #t
+  print: #t
   final: #f)
 
 (defmethod {:init! WorkspaceFolder}

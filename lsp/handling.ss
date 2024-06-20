@@ -1,12 +1,14 @@
 (export #t)
 
-(import :std/logger
-        :std/net/json-rpc)
+(import :std/sugar
+        :std/logger
+        :std/net/json-rpc
+        (only-in :gerbil/gambit pretty-print))
 
 
 (def +handlers+ (make-hash-table))
 (def +new-reqs+ (make-hash-table))
-
+(def pretty pretty-print)
 
 ;; See :std/net/json-rpc
 (def (lsp-handler method params)

@@ -116,4 +116,5 @@
   (lambda (params)
     (lsp-req! "workspace/workspaceFolders" (void)
       (lambda (all-workspace-folders)
-        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))))
+        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])
+        (pretty workspace-folders (current-error-port))))))
