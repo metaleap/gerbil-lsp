@@ -6,7 +6,8 @@
 
 
 (defclass (Position JSON)
-  (line character)
+  ( line
+    character)
   constructor: :init!
   final: #t)
 
@@ -44,3 +45,14 @@
   (lambda (this json-obj)
     (TextDocumentPositionParams:::init! this json-obj)
     ))
+
+(defclass (WorkspaceFolder JSON)
+  ( uri
+    name)
+  constructor: :init!
+  final: #f)
+
+(defmethod {:init! WorkspaceFolder
+  (lambda (this json-obj)
+    (set! this.name (hash-get json-obj "name"))
+    (set! this.uri (hash-get json-obj "uri"))))

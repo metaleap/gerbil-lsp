@@ -12,6 +12,7 @@
         ./handling
         ./msgs/lifecycle
         ./msgs/lang-intel
+        ./msgs/workspace
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 

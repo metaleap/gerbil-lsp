@@ -7,7 +7,9 @@
         :std/os/socket
         :std/text/json
         :std/net/json-rpc
-        ../handling)
+        ../handling
+        ./types
+        ./workspace)
 
 (def +server-name+        "gxlsp")
 (def +server-version+     "0.0.1")
@@ -113,6 +115,5 @@
 (lsp-handle "initialized"
   (lambda (params)
     (lsp-req! "workspace/workspaceFolders" (void)
-      (lambda (workspace-folders)
-        (debugf ">>>>>WSFs<<<<<~a>>>>>>" workspace-folders)
-        (void)))))
+      (lambda (all-workspace-folders)
+        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))))
