@@ -23,8 +23,9 @@
 ;; used by `./msgs/*.ss` modules to enqueue LSP requests to the client
 (def (lsp-req! method params on-resp)
   (def req-id (symbol->string (gensym)))
-  (hash-put! +new-reqs+ req-id (json-rpc-request
-                                  jsonrpc: json-rpc-version
-                                  method: method
-                                  params: params
-                                  id: req-id)))
+  (hash-put! +new-reqs+ req-id (cons (json-rpc-request
+                                        jsonrpc: json-rpc-version
+                                        method: method
+                                        params: params
+                                        id: req-id)
+                                      on-resp)))

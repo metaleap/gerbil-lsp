@@ -68,51 +68,47 @@
             (outgoing :- LspReqResp))
       (def done #f)
       (while (not done)
-        ; all the below (before the `try`) never throws
         (let (ok-or-err (read-msg! incoming))
           (if (not (eqv? #t ok-or-err)) ; either way, we set `res.json`
             ; received an error message
             (using (err ok-or-err :- JSON-RPCError)
               (set! outgoing.json err #;(trivial-class->json-object err)))
             ; else, received a normal message
-            (if (hash-key? incoming.json "method")
-              ; msg is an incoming request
-              (set! outgoing.json (serve-json-rpc lsp-handler incoming.json))
-              ; else, msg is an incoming response
-              (let* ( (req-id (hash-get incoming.json "id"))
-                      (handler (hash-get +pending-reqs+ req-id)))
-                (when (handler)
-                  (hash-remove! +pending-reqs+ req-id)
-                  (handler (hash-get incoming.json "params")))
-              ))))
+            (begin
+              (if (hash-key? incoming.json "method")
+                ; msg is an incoming request or notification
+                (set! outgoing.json (serve-json-rpc lsp-handler incoming.json))
+                ; else, msg is an incoming response
+                (begin
+                  (let (req-id (hash-get incoming.json "id"))
+                    (let (handler (hash-get +pending-reqs+ req-id))
+                      (when handler
+                        (hash-remove! +pending-reqs+ req-id)
+                        (try
+                          (handler (hash-get incoming.json "result"))
+                          (catch (e)
+                            (debugf "response handler failed on response '~a': ~a"
+                                      (json-object->string incoming.json) e)))))))))))
         ; if any writes throw, we are irreparably disconnected
         (try
           ; only respond to Requests, but not Notifications
           (when (hash-get incoming.json "id")
             (write-msg! outgoing))
           ; send out requests that have piled up, if any
-          (hash-for-each (lambda (req-id req)
-              (hash-put! +pending-reqs+ req-id req)
-              (write-msg! (make-LspReqResp transport req))
-              (set! dbg #t)
+          (hash-for-each (lambda (req-id req-and-handler)
+              (hash-put! +pending-reqs+ req-id (cdr req-and-handler))
+              (write-msg! (make-LspReqResp transport (car req-and-handler)))
             ) +new-reqs+)
           (hash-clear! +new-reqs+)
-          ; TODO
           (catch (e)
             (errorf "=== exception raised in lsp-serve ~a" e)
             (set! done #t)))))))
 
-(def dbg #f)
 
 (def (read-msg! (incoming : LspReqResp))
   (try
     (using ((ibuf (Transport-reader incoming.transport) :- BufferedReader))
       (begin
-        ; (while dbg
-        ;   (let ((c (BufferedReader-read-u8 ibuf)))
-        ;     (if (eqv? #!eof c)
-        ;       (exit 123)
-        ;       (write-u8 c (current-error-port)))))
         (def headers (read-request-headers ibuf))
         (def json (bytes->json (read-request-body ibuf headers)))
         (debugf "=== RECV ~a" (json-object->string json))
