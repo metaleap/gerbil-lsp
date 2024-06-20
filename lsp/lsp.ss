@@ -39,6 +39,8 @@
 ;;; Serving
 ;;;
 
+(def +pending-reqs+ (make-hash-table))
+
 ; Multiple transports: currently implemented below are stdio and server-socket
 ; (the latter single-client and blocking-while-listening-until-accept).
 ; If users ever really request it, further impls could include pipes or client-socket
@@ -60,55 +62,74 @@
 ;; The serving loop: processes requests through `handle-request!`.
 (def (lsp-serve (transport : Transport))
   (debugf "=== lsp-serve")
-  (let ((req (make-LspReqResp transport #f))
-        (res (make-LspReqResp transport #f)))
-    (using ((req :- LspReqResp)
-            (res :- LspReqResp))
+  (let ((incoming (make-LspReqResp transport #f))
+        (outgoing (make-LspReqResp transport #f)))
+    (using ((incoming :- LspReqResp)
+            (outgoing :- LspReqResp))
       (def done #f)
       (while (not done)
-        ; the below (before the `try`) never throws
-        (let (ok-or-err (read-request! req))
-          (if (eqv? #t ok-or-err) ; either way, we set `res.json`
-              (set! res.json (serve-json-rpc lsp-handler req.json))
-              (using (err ok-or-err :- JSON-RPCError)
-                (set! res.json err #;(trivial-class->json-object err)))))
-
+        ; all the below (before the `try`) never throws
+        (let (ok-or-err (read-msg! incoming))
+          (if (not (eqv? #t ok-or-err)) ; either way, we set `res.json`
+            ; received an error message
+            (using (err ok-or-err :- JSON-RPCError)
+              (set! outgoing.json err #;(trivial-class->json-object err)))
+            ; else, received a normal message
+            (if (hash-key? incoming.json "method")
+              ; msg is an incoming request
+              (set! outgoing.json (serve-json-rpc lsp-handler incoming.json))
+              ; else, msg is an incoming response
+              (let* ( (req-id (hash-get incoming.json "id"))
+                      (handler (hash-get +pending-reqs+ req-id)))
+                (when (handler)
+                  (hash-remove! +pending-reqs+ req-id)
+                  (handler (hash-get incoming.json "params")))
+              ))))
         ; if any writes throw, we are irreparably disconnected
         (try
           ; only respond to Requests, but not Notifications
-          (when (hash-get req.json "id")
-            (write! res))
+          (when (hash-get incoming.json "id")
+            (write-msg! outgoing))
           ; send out requests that have piled up, if any
+          (hash-for-each (lambda (req-id req)
+              (hash-put! +pending-reqs+ req-id req)
+              (write-msg! (make-LspReqResp transport req))
+              (set! dbg #t)
+            ) +new-reqs+)
+          (hash-clear! +new-reqs+)
           ; TODO
           (catch (e)
             (errorf "=== exception raised in lsp-serve ~a" e)
             (set! done #t)))))))
 
+(def dbg #f)
 
-(def (read-request! (req : LspReqResp))
-  (debugf "=== read-request!")
+(def (read-msg! (incoming : LspReqResp))
   (try
-    (using ((ibuf (Transport-reader req.transport) :- BufferedReader))
-      (let* ( (headers (read-request-headers ibuf))
-              (json (bytes->json (read-request-body ibuf headers))))
-                (debugf "=== Request ~a" (json-object->string json))
-                (set! req.json json)
-                #t))
+    (using ((ibuf (Transport-reader incoming.transport) :- BufferedReader))
+      (begin
+        ; (while dbg
+        ;   (let ((c (BufferedReader-read-u8 ibuf)))
+        ;     (if (eqv? #!eof c)
+        ;       (exit 123)
+        ;       (write-u8 c (current-error-port)))))
+        (def headers (read-request-headers ibuf))
+        (def json (bytes->json (read-request-body ibuf headers)))
+        (debugf "=== RECV ~a" (json-object->string json))
+        (set! incoming.json json)
+        #t))
     (catch (e)
-      (debugf "Exception raised in read-request!: ~a" e)
+      (debugf "Exception raised in read-msg!: ~a" e)
       (internal-error e))))
 
 
-(def (write! (msg : LspReqResp))
-  (def Content-Length (string->bytes "Content-Length: "))
-  (def (content-length buf)
-    (string->bytes (number->string (u8vector-length buf))))
-  (using ((obuf (Transport-writer msg.transport) :- BufferedWriter))
-    (let ((out (json-object->bytes msg.json)))
-      (debugf "=== Response ~a" (bytes->string out))
+(def (write-msg! (outgoing : LspReqResp))
+  (using ((obuf (Transport-writer outgoing.transport) :- BufferedWriter))
+    (let ((out (json-object->bytes outgoing.json)))
+      (debugf "=== SEND ~a" (bytes->string out))
       ;; Headers
-      (obuf.write Content-Length)
-      (obuf.write (content-length out))
+      (obuf.write (string->bytes "Content-Length: "))
+      (obuf.write (string->bytes (number->string (u8vector-length out))))
       (write-crlf obuf)
       (write-crlf obuf)
       ;; Body

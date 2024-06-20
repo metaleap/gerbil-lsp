@@ -11,7 +11,7 @@
   final: #t)
 
 (defmethod {:init! Position}
-  (lambda ((this :- Position) json-obj)
+  (lambda (this json-obj)
     (set! this.line (hash-get json-obj "line"))
     (set! this.character (hash-get json-obj "character"))))
 
@@ -31,7 +31,7 @@
   final: #f)
 
 (defmethod {:init! TextDocumentPositionParams}
-  (lambda ((this :- TextDocumentPositionParams) json-obj)
+  (lambda (this json-obj)
     (set! this.position (make-Position (hash-get json-obj "position")))
     (set! this.textDocument (make-TextDocumentIdentifier (hash-get json-obj "textDocument")))))
 
@@ -41,6 +41,6 @@
   final: #t)
 
 (defmethod {:init! HoverParams}
-  (lambda ((this :- HoverParams) json-obj)
+  (lambda (this json-obj)
     (TextDocumentPositionParams:::init! this json-obj)
     ))

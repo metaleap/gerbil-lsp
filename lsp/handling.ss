@@ -15,14 +15,16 @@
     (handler params)))
 
 
-;; used by all `./msgs/*.ss` modules
+;; used by `./msgs/*.ss` modules to define LSP message handlers
 (def (lsp-handle method handler)
   (hash-put! +handlers+ method handler))
 
+
+;; used by `./msgs/*.ss` modules to enqueue LSP requests to the client
 (def (lsp-req! method params on-resp)
-  (def req-id (gensym))
-  (def req (json-rpc-request  jsonrpc: json-rpc-version
-                              method: method
-                              params: params
-                              id: (symbol->string req-id)))
-  (hash-put! +new-reqs+ req-id req))
+  (def req-id (symbol->string (gensym)))
+  (hash-put! +new-reqs+ req-id (json-rpc-request
+                                  jsonrpc: json-rpc-version
+                                  method: method
+                                  params: params
+                                  id: req-id)))
