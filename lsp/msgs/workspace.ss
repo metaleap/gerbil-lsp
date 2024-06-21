@@ -96,9 +96,3 @@
 (lsp-handler "workspace/didChangeWatchedFiles"
   (lambda (params)
     (void)))
-
-
-; {"method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":"file:///home/_/c/l/gerbil-lsp/lsp/msgs/foo.ss","type":1}]}}
-; {"params":{"files":[{"uri":"file:///home/_/c/l/gerbil-lsp/lsp/msgs/foo.ss"}]},"method":"workspace/didDeleteFiles"}
-; {"method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":"file:///home/_/c/l/gerbil-lsp/lsp/msgs/foo.ss","type":3}]}}
-; {"method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":"file:///home/_/c/l/gerbil-lsp/lsp/msgs/workspace.ss","type":2}]}}

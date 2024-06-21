@@ -1,15 +1,11 @@
 ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
 
-(import :std/cli/getopt
-        :std/io
-        :std/sugar
+(import :std/sugar
         :std/logger
-        :std/os/socket
-        :std/text/json
-        :std/net/json-rpc
         ../handling
         ./types
-        ./workspace)
+        ./workspace
+        ./outgoing-requests)
 
 (def +server-name+        "gxlsp")
 (def +server-version+     "0.0.1")
@@ -37,9 +33,6 @@
   (lambda (params)
     (using (lsp-client +lsp-client+ :- LspClient)
       (let-hash params
-        (def glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
-                            (list-ref source-file-extensions 0)
-                            (string-append "{" (string-join source-file-extensions ",") "}")))
         (when .$clientInfo
           (set! lsp-client.client-name    (hash-get .$clientInfo "name"))
           (set! lsp-client.client-version (hash-get .$clientInfo "version")))
@@ -49,16 +42,7 @@
         (hash ("serverInfo"   +server-info+)
               ("capabilities" (hash
                                   ("workspace" (hash
-                                    ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))
-                                    ("fileOperations"
-                                      (let (workspace-file-ops (hash
-                                              ("filters" [ (hash
-                                                ("matches" "file")
-                                                ("pattern" (hash
-                                                  ("glob" (string-append "**/*" glob-exts)))))])))
-                                        (hash ("didCreate" workspace-file-ops)
-                                              ("didRename" workspace-file-ops)
-                                              ("didDelete" workspace-file-ops))))))
+                                    ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))))
                                   ; ("textDocumentSync"
                                   ;   (hash ("openClose" #f)
                                   ;         ("change" 1)))
@@ -118,6 +102,12 @@
 
 (lsp-handler "initialized"
   (lambda (params)
-    (lsp-req! "workspace/workspaceFolders" (void)
-      (lambda (all-workspace-folders)
-        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))))
+    (def glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
+                        (list-ref source-file-extensions 0)
+                        (string-append "{" (string-join source-file-extensions ",") "}")))
+    (lsp-req-client-registercapability "workspace/didChangeWatchedFiles"
+                                        (make-DidChangeWatchedFilesRegistrationOptions
+                                          watchers: [(make-FileSystemWatcher
+                                                        kind: watchkind-all
+                                                        globPattern: (string-append "**/*" glob-exts))]))
+    (lsp-req-workspace-workspacefolders)))

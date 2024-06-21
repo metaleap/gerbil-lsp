@@ -62,8 +62,8 @@
           (set! json-outgoing (serve-json-rpc lsp-handle json-incoming))
           ; else, msg is an incoming response
           (let (handler (hash-get +pending-reqs+ msg-id))
+            (hash-remove! +pending-reqs+ msg-id) ; even if handler==#f, because void-returning reqs use that
             (when handler
-              (hash-remove! +pending-reqs+ msg-id)
               (try
                 (handler (hash-get json-incoming "result"))
                 (catch (e)
