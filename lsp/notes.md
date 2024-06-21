@@ -150,11 +150,15 @@ Results:
   - any from any not-yet-imported `std/*` / `gerbil/*` etc or not-yet-imported workspace-local source files with an additional "import edit" to be applied in-editor to the current source (such a text-edit being simply an (insert-text,insert-position) pair)
 - plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
 
-All prefix-filtered by the ident-compatible text fragment directly before the current-position, unless there's a non-ident-compatible char just before it.
+**Filtering:**
+- none if a non-identifier-compatible char (braces parens whitespace etc) is just before current-position
+- none if in a num literal or (begun) string literal
+- by the identifier-compatible text fragment directly before the current-position
+  - prefix matches first, substring matches afterwards (they matter, too, as auto-complete is often a search attempt)
 
-**On "dot completions":** imho, since this is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
+**On "dot completions":** imho, since this sugar is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
-- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`), ie. "there _is_ no 'dot-completion' (special handling of dots)"
+- hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`, same for methods), ie. "there _is_ no 'dot-completion' (special handling of dots)"
 
 ## _`doc-tips`_
 
