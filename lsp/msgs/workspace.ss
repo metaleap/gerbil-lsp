@@ -19,7 +19,9 @@
 
 
 (def (source-file-path? file-path)
-  (any (lambda (ext) (path-extension-is? file-path ext)) source-file-extensions))
+  (any (lambda (file-path-ext)
+    (path-extension-is? file-path (string-append file-path-ext))
+  ) source-file-extensions))
 
 
 (def (on-source-files-created file-paths)

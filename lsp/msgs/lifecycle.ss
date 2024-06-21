@@ -37,6 +37,9 @@
   (lambda (params)
     (using (lsp-client +lsp-client+ :- LspClient)
       (let-hash params
+        (def glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
+                            (list-ref source-file-extensions 0)
+                            (string-append "{" (string-join source-file-extensions ",") "}")))
         (when .$clientInfo
           (set! lsp-client.client-name    (hash-get .$clientInfo "name"))
           (set! lsp-client.client-version (hash-get .$clientInfo "version")))
@@ -52,7 +55,7 @@
                                               ("filters" [ (hash
                                                 ("matches" "file")
                                                 ("pattern" (hash
-                                                  ("glob" (string-append "**/*{" (string-join source-file-extensions ",") "}")))))])))
+                                                  ("glob" (string-append "**/*" glob-exts)))))])))
                                         (hash ("didCreate" workspace-file-ops)
                                               ("didRename" workspace-file-ops)
                                               ("didDelete" workspace-file-ops))))))
