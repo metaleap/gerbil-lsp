@@ -48,10 +48,11 @@
                                   ("workspace" (hash
                                     ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))
                                     ("fileOperations"
-                                      (let (workspace-file-ops
-                                              (hash ("filters" [(hash ("pattern"
-                                                (hash ("glob" "**/*.ss")))
-                                                  ("matches" "file"))])))
+                                      (let (workspace-file-ops (hash
+                                              ("filters" [ (hash
+                                                ("matches" "file")
+                                                ("pattern" (hash
+                                                  ("glob" (string-append "**/*{" (string-join source-file-extensions ",") "}")))))])))
                                         (hash ("didCreate" workspace-file-ops)
                                               ("didRename" workspace-file-ops)
                                               ("didDelete" workspace-file-ops))))))

@@ -70,6 +70,32 @@
     (TextDocumentIdentifier:::init! this json-obj)
   ))
 
+(defclass (FileDelete TextDocumentIdentifier)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! FileDelete}
+  (lambda (this json-obj)
+    (TextDocumentIdentifier:::init! this json-obj)
+  ))
+
+(defclass (FileRename JSON)
+  ( oldUri
+    newUri)
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! FileRename}
+  (lambda (this json-obj)
+    (set! this.oldUri (hash-get json-obj "oldUri"))
+    (set! this.newUri (hash-get json-obj "newUri"))
+  ))
+
 (defclass (WorkspaceFolder JSON)
   ( uri
     name)
