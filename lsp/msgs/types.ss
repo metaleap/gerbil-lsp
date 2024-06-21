@@ -58,43 +58,23 @@
     (TextDocumentPositionParams:::init! this json-obj)
   ))
 
-(defclass (FileCreate TextDocumentIdentifier)
-  ()
+(defclass (FileEvent JSON)
+  ( uri
+    type)
   constructor: :init!
   equal: #t
   print: #t
   final: #t)
 
-(defmethod {:init! FileCreate}
+(defmethod {:init! FileEvent}
   (lambda (this json-obj)
-    (TextDocumentIdentifier:::init! this json-obj)
+    (set! this.uri (hash-get json-obj "uri"))
+    (set! this.type (hash-get json-obj "type"))
   ))
 
-(defclass (FileDelete TextDocumentIdentifier)
-  ()
-  constructor: :init!
-  equal: #t
-  print: #t
-  final: #t)
-
-(defmethod {:init! FileDelete}
-  (lambda (this json-obj)
-    (TextDocumentIdentifier:::init! this json-obj)
-  ))
-
-(defclass (FileRename JSON)
-  ( oldUri
-    newUri)
-  constructor: :init!
-  equal: #t
-  print: #t
-  final: #t)
-
-(defmethod {:init! FileRename}
-  (lambda (this json-obj)
-    (set! this.oldUri (hash-get json-obj "oldUri"))
-    (set! this.newUri (hash-get json-obj "newUri"))
-  ))
+(def filechangetype-created 1)
+(def filechangetype-changed 2)
+(def filechangetype-deleted 3)
 
 (defclass (WorkspaceFolder JSON)
   ( uri

@@ -19,9 +19,10 @@ Since there'll be a sort of an _"ongoing / long-lived interpreter(ish) session o
 Necessary:
 
 - **on-source-files-deleted** with a list of Scheme source file paths
-- **on-source-files-created** with a list of Scheme source file paths (it's not necessarily to be assumed they're empty, might be on file paste or on the buffer's first Save)
+- **on-source-files-created** with a list of Scheme source file paths (they're not necessarily empty: might be on file copied/moved, or the buffer's first Save, or an outside-the-editor file modification)
 - **on-source-file-edited**: this is not-yet-saved live edits — the full new buffer contents would be passed (unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
 - **on-source-file-changed** for on-disk source file content changes, whether through Save or from _outside the editor with the file not being opened inside it_ (because `ide` will also want to reload _such_ file changes into the session)
+  - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) as _on-source-files-created_ events!
 - **on-root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would _also_ be used for the initial-list-of-root-dirs shortly after the session starts, and whenever a new "workspace" / project (list of root dirs) is opened in the editor
 
 

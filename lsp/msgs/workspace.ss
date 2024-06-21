@@ -34,6 +34,11 @@
   (debugf "=== source files deleted: ~a" file-paths))
 
 
+(def (on-source-files-changed file-paths)
+  ; TODO: call `ide/on-source-files-changed`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
+  (debugf "=== source files changed: ~a" file-paths))
+
+
 (def (on-workspace-folders-changed added removed)
   (def (folder->path (folder :- WorkspaceFolder))
     (lsp-uri->file-path folder.uri))
@@ -53,46 +58,20 @@
       (on-workspace-folders-changed (map make-WorkspaceFolder .$added) (map make-WorkspaceFolder .$removed)))))
 
 
-(lsp-handler "workspace/didCreateFiles"
-  (lambda (params)
-    (let-hash params
-      (let (file-paths (map (… lsp-uri->file-path FileCreate-uri make-FileCreate) .$files))
-        (on-source-files-created (filter source-file-path? file-paths))))))
-
-
-(lsp-handler "workspace/didDeleteFiles"
-  (lambda (params)
-    (let-hash params
-      (let (file-paths (map (… lsp-uri->file-path FileDelete-uri make-FileDelete) .$files))
-        (on-source-files-deleted (filter source-file-path? file-paths))))))
-
-
-(lsp-handler "workspace/didRenameFiles"
-  (lambda (params)
-    (let-hash params
-      (def all (map make-FileRename .$files))
-
-      (def files-added (filter (lambda ((it :- FileRename))
-        (and  (not (source-file-path? (lsp-uri->file-path it.oldUri)))
-              (source-file-path? (lsp-uri->file-path it.newUri)))
-        ) all))
-      (def files-removed (filter (lambda ((it :- FileRename))
-        (and  (source-file-path? (lsp-uri->file-path it.oldUri))
-              (not (source-file-path? (lsp-uri->file-path it.newUri))))
-        ) all))
-      (def files-renamed (filter (lambda ((it :- FileRename))
-        (and  (source-file-path? (lsp-uri->file-path it.oldUri))
-              (source-file-path? (lsp-uri->file-path it.newUri)))
-        ) all))
-
-      (on-source-files-created (map (… lsp-uri->file-path FileRename-newUri) files-added))
-      (on-source-files-deleted (map (… lsp-uri->file-path FileRename-oldUri) files-removed))
-      (let (file-renames (map (lambda ((it :- FileRename)) (cons it.oldUri it.newUri)) files-renamed))
-        ; TODO: call `ide/on-source-files-renamed`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-        (debugf "=== Source files renamed: ~a" file-renames)
-      ))))
-
-
 (lsp-handler "workspace/didChangeWatchedFiles"
-  (lambda (params)
-    (void)))
+  (let ((file-event-file-path (… lsp-uri->file-path FileEvent-uri))
+        (file-event-check-ext (… source-file-path? lsp-uri->file-path FileEvent-uri)))
+    (lambda (params)
+      (def (file-event-check-type file-change-type) (lambda ((it :- FileEvent)) (fx= it.type file-change-type)))
+      (let-hash params
+        (def file-events (filter  file-event-check-ext
+                                  (unique (map make-FileEvent .$changes)))) ; unique: because vscode sends duplicates at times
+        (def file-paths-deleted (filter (file-event-check-type filechangetype-deleted) file-events))
+        (def file-paths-created (filter (file-event-check-type filechangetype-created) file-events))
+        (def file-paths-changed (filter (file-event-check-type filechangetype-changed) file-events))
+        (unless (null? file-paths-deleted)
+          (on-source-files-deleted (map file-event-file-path file-paths-deleted)))
+        (unless (null? file-paths-created)
+          (on-source-files-created (map file-event-file-path file-paths-created)))
+        (unless (null? file-paths-changed)
+          (on-source-files-changed (map file-event-file-path file-paths-changed)))))))
