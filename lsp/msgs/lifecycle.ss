@@ -102,12 +102,13 @@
 
 (lsp-handler "initialized"
   (lambda (params)
-    (def glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
+    (lsp-req-workspace-workspacefolders)
+    (let* ( (glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
                         (list-ref source-file-extensions 0)
                         (string-append "{" (string-join source-file-extensions ",") "}")))
-    (lsp-req-client-registercapability "workspace/didChangeWatchedFiles"
-                                        (make-DidChangeWatchedFilesRegistrationOptions
-                                          watchers: [(make-FileSystemWatcher
-                                                        kind: watchkind-all
-                                                        globPattern: (string-append "**/*" glob-exts))]))
-    (lsp-req-workspace-workspacefolders)))
+            (watcher (make-FileSystemWatcher
+                        kind: watchkind-all
+                        globPattern: (string-append "**/*" glob-exts))))
+      (lsp-req-client-registercapability "workspace/didChangeWatchedFiles"
+                                          (make-DidChangeWatchedFilesRegistrationOptions
+                                            watchers: [watcher])))))
