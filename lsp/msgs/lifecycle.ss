@@ -5,7 +5,7 @@
         ../handling
         ./types
         ./workspace
-        ./outgoing-requests)
+        ./all-outgoing-requests)
 
 (def +server-name+        "gxlsp")
 (def +server-version+     "0.0.1")
