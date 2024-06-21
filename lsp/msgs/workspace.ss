@@ -18,6 +18,20 @@
   (substring uri (string-length "file://") (string-length uri)))
 
 
+(def (source-file-path? file-path)
+  (any (lambda (ext) (path-extension-is? file-path ext)) source-file-extensions))
+
+
+(def (on-source-files-created file-paths)
+  ; TODO: call `ide/on-source-files-created`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
+  (debugf "=== source files created: ~a" file-paths))
+
+
+(def (on-source-files-deleted file-paths)
+  ; TODO: call `ide/on-source-files-deleted`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
+  (debugf "=== source files deleted: ~a" file-paths))
+
+
 (def (on-workspace-folders-changed added removed)
   (def (folder->path (folder :- WorkspaceFolder))
     (lsp-uri->file-path folder.uri))
@@ -31,16 +45,6 @@
         (debugf "=== workspace folders are now: ~a" workspace-folders)))))
 
 
-(def (on-source-files-created file-paths)
-  ; TODO: call `ide/on-source-files-created`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (debugf "=== source files created: ~a" workspace-folders))
-
-
-(def (on-source-files-deleted file-paths)
-  ; TODO: call `ide/on-source-files-deleted`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (debugf "=== source files deleted: ~a" workspace-folders))
-
-
 (lsp-handler "workspace/didChangeWorkspaceFolders"
   (lambda (params)
     (let-hash params
@@ -51,14 +55,14 @@
   (lambda (params)
     (let-hash params
       (let (file-paths (map (… lsp-uri->file-path FileCreate-uri make-FileCreate) .$files))
-        (on-source-files-created file-paths)))))
+        (on-source-files-created (filter source-file-path? file-paths))))))
 
 
 (lsp-handler "workspace/didDeleteFiles"
   (lambda (params)
     (let-hash params
       (let (file-paths (map (… lsp-uri->file-path FileDelete-uri make-FileDelete) .$files))
-        (on-source-files-deleted file-paths)))))
+        (on-source-files-deleted (filter source-file-path? file-paths))))))
 
 
 (lsp-handler "workspace/didRenameFiles"
@@ -87,8 +91,9 @@
       ))))
 
 
-(def (source-file-path? file-path)
-  (any (lambda (ext) (path-extension-is? file-path ext)) source-file-extensions))
+(lsp-handler "workspace/didChangeWatchedFiles"
+  (lambda (params)
+    (void)))
 
 
 ; {"method":"workspace/didChangeWatchedFiles","params":{"changes":[{"uri":"file:///home/_/c/l/gerbil-lsp/lsp/msgs/foo.ss","type":1}]}}
