@@ -1,24 +1,25 @@
-(export #t)
+(export lsp-handler lsp-req! +new-reqs+ lsp-handle)
 
 (import :std/sugar
         :std/logger
-        :std/net/json-rpc
-        (only-in :gerbil/gambit pretty-print))
+        :std/net/json-rpc)
 
 
 (def +handlers+ (make-hash-table))
 (def +new-reqs+ (make-hash-table))
-(def pretty pretty-print)
 
-;; See :std/net/json-rpc
-(def (lsp-handler method params)
-  (debugf "=== lsp-handler (~a)" method)
+(def (lsp-handle method params)
+  (debugf "=== lsp-handler ~a ~a" method (if (hash-key? +handlers+ method) "found" "NOT found"))
   (let ((handler (hash-ref +handlers+ method method-not-found)))
-    (handler params)))
+    (try
+      (handler params)
+    (catch (e)
+      (debugf "FAILED:~a" e)
+      (raise e)))))
 
 
 ;; used by `./msgs/*.ss` modules to define LSP message handlers
-(def (lsp-handle method handler)
+(def (lsp-handler method handler)
   (hash-put! +handlers+ method handler))
 
 

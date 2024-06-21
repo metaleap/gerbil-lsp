@@ -59,7 +59,7 @@
         ; else, received a normal message
         (if msg-method
           ; msg is an incoming request or notification
-          (set! json-outgoing (serve-json-rpc lsp-handler json-incoming))
+          (set! json-outgoing (serve-json-rpc lsp-handle json-incoming))
           ; else, msg is an incoming response
           (let (handler (hash-get +pending-reqs+ msg-id))
             (when handler
@@ -70,6 +70,7 @@
                   (debugf "response handler failed on response '~a': ~a"
                             (json-object->string json-incoming) e))))))))
 
+    (thread-yield!) ; somehow flushes logger prints I'm told
     (try ; if any writes throw, we are irreparably disconnected
       ; only respond to Requests, but not Notifications or Responses
       (when (and json-outgoing (not (void? json-outgoing)) (hash-get json-incoming "id"))
@@ -82,7 +83,9 @@
       (hash-clear! +new-reqs+)
       (catch (e)
         (errorf "=== connection lost, exiting: ~a" e)
-        (set! done #t)))))
+        (set! done #t))
+      (finally ; flush logger prints
+        (thread-yield!)))))
 
 
 (def (read-msg! (transport : Transport))

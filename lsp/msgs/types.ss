@@ -23,7 +23,7 @@
   constructor: :init!
   equal: #t
   print: #t
-  final: #t)
+  final: #f)
 
 (defmethod {:init! TextDocumentIdentifier}
   (lambda (this json-obj)
@@ -52,7 +52,19 @@
 (defmethod {:init! HoverParams}
   (lambda (this json-obj)
     (TextDocumentPositionParams:::init! this json-obj)
-    ))
+  ))
+
+(defclass (FileCreate TextDocumentIdentifier)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! FileCreate}
+  (lambda (this json-obj)
+    (TextDocumentIdentifier:::init! this json-obj)
+  ))
 
 (defclass (WorkspaceFolder JSON)
   ( uri

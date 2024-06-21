@@ -23,17 +23,17 @@
 (def +lsp-client+ (make-LspClient #f #f #f #f #f))
 
 
-(lsp-handle "shutdown"
+(lsp-handler "shutdown"
   (lambda (params)
     (void)))
 
 
-(lsp-handle "exit"
+(lsp-handler "exit"
   (lambda (params)
     (exit)))
 
 
-(lsp-handle "initialize"
+(lsp-handler "initialize"
   (lambda (params)
     (using (lsp-client +lsp-client+ :- LspClient)
       (let-hash params
@@ -112,7 +112,7 @@
 )))))))
 
 
-(lsp-handle "initialized"
+(lsp-handler "initialized"
   (lambda (params)
     (lsp-req! "workspace/workspaceFolders" (void)
       (lambda (all-workspace-folders)
