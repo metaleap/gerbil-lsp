@@ -2,7 +2,11 @@
 
 (import :std/sugar
         :std/text/json
+        :std/misc/func
         ../handling)
+
+
+(def … compose1)
 
 
 (defclass (Position JSON)

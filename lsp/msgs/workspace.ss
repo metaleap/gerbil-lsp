@@ -37,9 +37,8 @@
 (lsp-handler "workspace/didCreateFiles"
   (lambda (params)
     (let-hash params
-      (let (file-paths (map lsp-uri->file-path (map FileCreate-uri (map make-FileCreate .$files))))
+      (let (file-paths (map (… lsp-uri->file-path FileCreate-uri make-FileCreate) .$files))
         ; TODO: call `ide/on-source-files-created`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-        (raise "DaErr")
         (debugf "=== Source files created: ~a" file-paths)))))
 
 

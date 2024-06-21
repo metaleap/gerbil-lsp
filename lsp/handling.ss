@@ -9,13 +9,15 @@
 (def +new-reqs+ (make-hash-table))
 
 (def (lsp-handle method params)
-  (debugf "=== lsp-handler ~a ~a" method (if (hash-key? +handlers+ method) "found" "NOT found"))
-  (let ((handler (hash-ref +handlers+ method method-not-found)))
-    (try
-      (handler params)
-    (catch (e)
-      (debugf "FAILED:~a" e)
-      (raise e)))))
+  (def exists (hash-key? +handlers+ method))
+  ((if exists debugf errorf) "=== lsp-handler '~a' ~a" method (if exists "found" "NOT found"))
+  (unless (not exists)
+    (let ((handler (hash-ref +handlers+ method method-not-found)))
+      (try
+        (handler params)
+      (catch (e)
+        (errorf "=== lsp-handler '~a' FAILED: ~a" method e)
+        (raise e)))))) ; rethrow so Request's Response will contain the error details
 
 
 ;; used by `./msgs/*.ss` modules to define LSP message handlers

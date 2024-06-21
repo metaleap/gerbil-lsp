@@ -67,14 +67,14 @@
               (try
                 (handler (hash-get json-incoming "result"))
                 (catch (e)
-                  (debugf "response handler failed on response '~a': ~a"
-                            (json-object->string json-incoming) e))))))))
+                  (errorf "=== response handler ~a FAILED on response '~a' with: ~a"
+                            msg-id (json-object->string json-incoming) e))))))))
 
     (thread-yield!) ; somehow flushes logger prints I'm told
     (try ; if any writes throw, we are irreparably disconnected
       ; only respond to Requests, but not Notifications or Responses
       (when (and json-outgoing (not (void? json-outgoing)) (hash-get json-incoming "id"))
-        (write-msg! transport json-outgoing))
+          (write-msg! transport json-outgoing))
       ; send out requests that have piled up, if any
       (hash-for-each (lambda (req-id req-and-handler)
           (hash-put! +pending-reqs+ req-id (cdr req-and-handler))
@@ -98,7 +98,7 @@
         (debugf "=== RECV ~a" (json-object->string json-obj))
         json-obj))
     (catch (e)
-      (debugf "Exception raised in read-msg!: ~a" e)
+      (errorf "=== FAILED to read-msg!: ~a" e)
       (internal-error e))))
 
 
