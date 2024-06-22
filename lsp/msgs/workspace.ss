@@ -24,19 +24,14 @@
   ) source-file-extensions))
 
 
-(def (on-source-files-created file-paths)
-  ; TODO: call `ide/on-source-files-created`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (debugf "=== source files created: ~a" file-paths))
-
-
-(def (on-source-files-deleted file-paths)
-  ; TODO: call `ide/on-source-files-deleted`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (debugf "=== source files deleted: ~a" file-paths))
-
-
-(def (on-source-files-changed file-paths)
-  ; TODO: call `ide/on-source-files-changed`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (debugf "=== source files changed: ~a" file-paths))
+(def (on-source-file-changes deleted created changed)
+  ; TODO: call `ide/on-source-file-changes`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
+  (unless (null? deleted)
+    (debugf "=== source files deleted ~a" deleted))
+  (unless (null? created)
+    (debugf "=== source files created: ~a" created))
+  (unless (null? changed)
+    (debugf "=== source files changed ~a" changed)))
 
 
 (def (on-workspace-folders-changed added removed)
@@ -69,9 +64,6 @@
         (def file-paths-deleted (filter (file-event-check-type filechangetype-deleted) file-events))
         (def file-paths-created (filter (file-event-check-type filechangetype-created) file-events))
         (def file-paths-changed (filter (file-event-check-type filechangetype-changed) file-events))
-        (unless (null? file-paths-deleted)
-          (on-source-files-deleted (map file-event-file-path file-paths-deleted)))
-        (unless (null? file-paths-created)
-          (on-source-files-created (map file-event-file-path file-paths-created)))
-        (unless (null? file-paths-changed)
-          (on-source-files-changed (map file-event-file-path file-paths-changed)))))))
+        (on-source-file-changes (file-event-file-path file-paths-deleted)
+                                (file-event-file-path file-paths-created)
+                                (file-event-file-path file-paths-changed))))))

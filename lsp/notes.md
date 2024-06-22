@@ -18,18 +18,19 @@ Since there'll be a sort of an _"ongoing / long-lived interpreter(ish) session o
 
 Necessary:
 
-- **on-source-files-deleted** with a list of Scheme source file paths
-- **on-source-files-created** with a list of Scheme source file paths (they're not necessarily empty: might be on file copied/moved, or the buffer's first Save, or an outside-the-editor file modification)
+- **on-root-folders-changed** with 2 lists, one of newly-added and one of newly-removed root folders
+  - this would _also_ be used for the initial-list-of-root-dirs shortly after the session starts,
+  - plus whenever a new "workspace" / project (list of root dirs) is opened in the editor (in which case, _removed_ is the root dirs of the previously opened workspace / project and _added_ those of the newly opened one)
+- **on-source-file-changes** with 3 lists of Scheme source file paths, to be processed in this order:
+  - _deleted_: if this has multiple entries, it's usually because a whole dir of source files was just deleted or renamed
+  - _created_: these are not necessarily empty: might be on file copied/moved/renamed, or a buffer's first Save, or an outside-the-editor file modification
+  - _changed_: for on-disk source file modifications, whether through Save or from outside the editor
+    - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) in _created_! So any in _created_ that are already being tracked should be appended to _changed_ by the callee in `lsp`
 - **on-source-file-edited**: this is not-yet-saved live edits — the full new buffer contents would be passed (unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
-- **on-source-file-changed** for on-disk source file content changes, whether through Save or from _outside the editor with the file not being opened inside it_ (because `ide` will also want to reload _such_ file changes into the session)
-  - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) as _on-source-files-created_ events!
-- **on-root-folders-changed** with a list of newly-added and a list of newly-removed root folders — this would _also_ be used for the initial-list-of-root-dirs shortly after the session starts, and whenever a new "workspace" / project (list of root dirs) is opened in the editor
 
-
-Note, there is no _on-source-files-renamed_:
+Note, there is no _renamed_:
 - due to certain LSP client (at least VSCode) quirks, file rename events do not get subscribed to by `lsp` from the clients on principle;
-- instead, correct and complete sequences of &mdash;first&mdash; an _on-source-files-deleted_ call followed by &mdash;next&mdash; an _on-source-files-created_ call will be issued to `ide` from `lsp`.
-
+- instead, correct and complete sequences of _deleted_ and _created_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide`.
 
 Optional, if it makes sense for (or is of interest to) `ide`:
 
