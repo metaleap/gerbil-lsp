@@ -28,7 +28,7 @@ Note, there is no _renamed_ in _on-source-file-changes_ &mdash;
 - due to certain LSP client (at least VSCode) quirks, file-rename events do not get subscribed to by `lsp` from the clients on principle;
 - instead, correct and complete combinations of _deleted_ and _created_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide` (hence, the importance of processing _deleted_ before _created_)
 
-Optional, **if** it is of any practical interest to `ide`:
+Optional, **if** it is of any practical interest to `ide` (for example to "prioritize" analyses / refreshes of opened files vs. all the others or some such)
 
 - **on-source-file-opened**
 - **on-source-file-closed**
