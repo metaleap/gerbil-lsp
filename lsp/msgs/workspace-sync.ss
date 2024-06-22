@@ -1,7 +1,7 @@
 ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceFeatures
 ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_synchronization
 
-(export #t)
+(export on-workspace-folders-changed)
 
 (import :std/sugar
         :std/logger
@@ -14,6 +14,7 @@
 
 (def source-file-extensions [".ss"])
 (def source-file-paths [])
+(def err-msg-fmt-fs "=== ignoring FS err while scrutinizing path ~a: ~a")
 
 
 (def (lsp-uri->file-path uri)
@@ -48,21 +49,22 @@
         (when (source-file-path? path)
           (set! ret (append ret [path]))))
     (catch (e)
-      (errorf "=== ignoring FS err while scrutinizing path ~a: ~a" path e)))))
+      (errorf err-msg-fmt-fs path e)))))
   ret)
 
 
-(def (on-source-file-changes removed added changed)
-  (set! removed (filter (lambda (path) (member path source-file-paths)) (unique removed)))
+(def (on-source-file-changes removed added changed) ; each arg is a list of file paths
+  (set! removed (filter (lambda (path) (member path source-file-paths)) removed))
   (def changed-in-added (filter (lambda (path) (member path source-file-paths)) added))
   (def added-in-changed (filter (lambda (path) (not (member path source-file-paths))) changed))
-  (set! added (append added-in-changed (filter (lambda (path) (member path changed-in-added)) added)))
-  (set! changed (append changed-in-added (filter (lambda (path) (member path added-in-changed)) changed)))
+  (set! added (append added-in-changed (filter (lambda (path) (not (member path changed-in-added))) added)))
+  (set! changed (append changed-in-added (filter (lambda (path) (not (member path added-in-changed))) changed)))
   ; TODO: call `ide/on-source-file-changes`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
   (unless (null? removed)
     (set! source-file-paths (filter (lambda (path) (not (member path removed))) source-file-paths))
     (debugf "=== source files removed ~a" removed))
   (unless (null? added)
+    (set! source-file-paths (unique (append source-file-paths added)))
     (debugf "=== source files added: ~a" added))
   (unless (null? changed)
     (debugf "=== source files changed ~a" changed)))
@@ -103,26 +105,36 @@
 
         ; first, grab actual Gerbil source file (not folder) events...
         (def file-events (filter file-event-check-ext changes))
-        (def file-events-deleted (filter (file-event-check-type filechangetype-deleted) file-events))
-        (def file-events-created (filter (file-event-check-type filechangetype-created) file-events))
-        (def file-events-changed (filter (file-event-check-type filechangetype-changed) file-events))
+        (def file-paths-deleted (map file-event-file-path (filter (file-event-check-type filechangetype-deleted) file-events)))
+        (def file-paths-created (map file-event-file-path (filter (file-event-check-type filechangetype-created) file-events)))
+        (def file-paths-changed (map file-event-file-path (filter (file-event-check-type filechangetype-changed) file-events)))
 
         ; sadly, folder events (such as moving or deleting one) are not
-        ; translated by vscode (and maybe also not by other LSP clients)
+        ; translated by vscode (and possibly also not by other LSP clients)
         ; into just individual file events, so we have to do it ourselves here
         (for-each! changes (lambda ((file-event :- FileEvent))
           (def path (file-event-file-path file-event))
-          (when (and (not (eq? filechangetype-changed file-event.type)) (fs-path-not-dotted? path))
-            (try
-              (def fs-info (file-info path))
-              (when (eq? 'directory (file-info-type fs-info))
-                (debugf "ISDIR:~a" path))
-            (catch (e)
-              (errorf "=== ignoring FS err while scrutinizing path ~a: ~a" path e))))))
+          (debugf "EVT ~a ~a" file-event path)
+          (when (fs-path-not-dotted? path)
+            (case file-event.type
+              ((filechangetype-deleted)
+                (debugf "DELETED~a" path)
+                (set! file-paths-deleted (append  file-paths-deleted
+                                                  (filter (fs-path-in-dir? path) source-file-paths))))
+              ((filechangetype-created)
+                (try
+                  (def fs-info (file-info path))
+                  (when (eq? 'directory (file-info-type fs-info))
+                    (let (file-paths (fs-dir-source-files path))
+                      (for-each! file-paths (lambda (file-path)
+                        (unless (member file-path source-file-paths)
+                            (set! file-paths-created  (append file-paths-created [file-path])))))))
+                (catch (e)
+                  (errorf err-msg-fmt-fs path e))))))))
 
-        (on-source-file-changes (filter fs-path-not-dotted? (map file-event-file-path file-events-deleted))
-                                (filter fs-path-not-dotted? (map file-event-file-path file-events-created))
-                                (filter fs-path-not-dotted? (map file-event-file-path file-events-changed)))))))
+        (on-source-file-changes (filter fs-path-not-dotted? file-paths-deleted)
+                                (filter fs-path-not-dotted? file-paths-created)
+                                (filter fs-path-not-dotted? file-paths-changed))))))
 
 
 (lsp-handler "textDocument/didOpen"
