@@ -2,7 +2,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **Namings** used in here are just provisional / placeholder idents, not me prescribing how exports from `ide` should be called.  =)
 
-**Paths:** for simplicity's sake, perhaps all paths consumed or produced `ide`-side should be absolute. Callers of `ide` can then (if they even need to at all) translate in both directions from/to whatever their thing is: project-dir-relative, current-dir-relative etc...
+**Paths:** all paths consumed or produced `lsp`-side are absolute.
 
 **Language intel quick jumps:**
 - [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
@@ -14,22 +14,24 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **No file-watchings in `ide` or `lsp`!**
 
-Since there'll be a sort of an _"ongoing / long-lived interpreter(ish) session on all the currently-opened project folders (aka 'root folders') with their sub-folders and source files"_ running `ide`-side, it should expose funcs to notify it about the following events, so that it can on-the-fly update its internal representations about the codebase-in-session, (re)analyse changed / new files etc:
+Since `ide` will have running some kind of _"ongoing / long-lived interpreter(ish) session on all the currently-opened project / workspace folders (aka 'root folders') with their sub-folders and source files"_, `ide` shall expose funcs for its consumers (incl. `lsp`) to notify it about the following events, so that it can on-the-fly update its internal live representations about the codebase-in-session, (re)analyse changed / new files (or their importers) etc:
 
 Necessary:
 
 - **on-root-folders-changed** with 2 lists, one of newly-added and one of newly-removed root folders
-  - this would _also_ be used for the initial-list-of-root-dirs shortly after the session starts,
-  - plus whenever a new "workspace" / project (list of root dirs) is opened in the editor (in which case, _removed_ is the root dirs of the previously opened workspace / project and _added_ those of the newly opened one)
+  - called for the _initial_ list of root dirs shortly after the session starts (or as soon as a project / workspace has been opened in the editor session)
+  - called whenever users add or remove root folders to / from their currently-opened project / workspace
+  - called whenever a wholly other "workspace" / project (list of root dirs) is opened in the editor, replacing the previously-opened one
+    - in this scenario, _removed_ is the root dirs of the previously-opened workspace / project, and _added_ those of the newly-opened one
 - **on-source-file-changes** with 3 lists of Scheme source file paths, to be processed in this order:
   - _deleted_: if this has multiple entries, it's usually because a whole dir of source files was just deleted or renamed
-  - _created_: these are not necessarily empty: might be on file copied/moved/renamed, or a buffer's first Save, or an outside-the-editor file modification
+  - _created_: these are not necessarily empty: might be on file copied/moved/renamed, or a buffer's first Save, or an outside-the-editor existing-file modification
   - _changed_: for on-disk source file modifications, whether through Save or from outside the editor
-    - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) in _created_! So any in _created_ that are already being tracked should be appended to _changed_ by the callee in `lsp`
+    - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) in _created_ &mdash; so any in _created_ that are already being tracked should be treated as _changed_ by the callee in `lsp`, if necessary
 - **on-source-file-edited**: this is not-yet-saved live edits — the full new buffer contents would be passed (unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
 
 Note, there is no _renamed_:
-- due to certain LSP client (at least VSCode) quirks, file rename events do not get subscribed to by `lsp` from the clients on principle;
+- due to certain LSP client (at least VSCode) quirks, file-rename events do not get subscribed to by `lsp` from the clients on principle;
 - instead, correct and complete sequences of _deleted_ and _created_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide`.
 
 Optional, if it makes sense for (or is of interest to) `ide`:
