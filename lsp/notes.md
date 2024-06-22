@@ -14,7 +14,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **No file-watchings in `ide` or `lsp`!**
 
-Since `ide` will have running some kind of _"ongoing / long-lived interpreter(ish) session on all the currently-opened project / workspace folders (aka 'root folders') with their sub-folders and source files"_, `ide` shall expose funcs for its consumers (incl. `lsp`) to notify it about the following events, so that it can on-the-fly update its internal live representations about the codebase-in-session, (re)analyse changed / new files (or their importers) etc:
+Since `ide` will have running some kind of _"ongoing / long-lived interpreter(ish) session"_, `ide` shall expose funcs for its consumers (incl. `lsp`) to notify it about the following events, so that it can on-the-fly update its internal live representations about the codebase-in-session, (re)analyze changed / new files (or their importers, or still-existing importers of just-removed files!) etc:
 
 Necessary:
 

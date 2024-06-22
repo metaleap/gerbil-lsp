@@ -44,10 +44,6 @@
               ("capabilities" (hash
                                   ("workspace" (hash
                                     ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))))
-                                    ; ("fileOperations" (hash
-                                    ;   ("didRename" (hash
-                                    ;     ("filters" [(hash
-                                    ;       ("pattern" (hash ("glob" "*") ("matches" "folder"))))])))))
                                   ("textDocumentSync"
                                     (hash ("openClose" #t)
                                           ("change" 1)))
