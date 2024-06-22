@@ -12,7 +12,7 @@
         ./types)
 
 
-(def source-file-extensions [".ss"])
+(def source-file-extensions [".ss"]) ; TODO: discuss & decide: add .scm or not?
 (def source-file-paths [])
 (def err-msg-fmt-fs "=== ignoring FS err while scrutinizing path ~a: ~a")
 
@@ -22,9 +22,10 @@
 
 
 (def (source-file-path? file-path)
-  (any (lambda (file-path-ext)
-    (path-extension-is? file-path (string-append file-path-ext))
-  ) source-file-extensions))
+  (or (string-suffix? "/gerbil.pkg" file-path)
+      (any (lambda (file-path-ext)
+              (path-extension-is? file-path (string-append file-path-ext))
+            ) source-file-extensions)))
 
 
 (def (fs-path-not-dotted? path)
@@ -101,7 +102,7 @@
       (def (file-event-check-type file-change-type)
         (lambda ((it :- FileEvent)) (fx= it.type file-change-type)))
       (using (params (make-DidChangeWatchedFilesParams params) :- DidChangeWatchedFilesParams)
-        (def changes (unique params.changes)) ; unique: because vscode sends duplicates at times
+        (def changes (unique params.changes)) ; unique: because vscode sent duplicates at times
 
         ; first, grab actual Gerbil source file (not folder) events...
         (def file-events (filter file-event-check-ext changes))
