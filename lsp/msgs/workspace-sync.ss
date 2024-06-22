@@ -12,6 +12,7 @@
 
 
 (def source-file-extensions [".ss"])
+(def all-source-files [])
 (def workspace-folders [])
 
 
@@ -23,6 +24,26 @@
   (any (lambda (file-path-ext)
     (path-extension-is? file-path (string-append file-path-ext))
   ) source-file-extensions))
+
+
+(def (fs-path-not-dotted? path)
+  (not (string-contains path "/.")))
+
+
+(def (fs-dir-source-files dir-path)
+  (def ret [])
+  (def names (directory-files [path: dir-path ignore-hidden: 'dot-and-dot-dot]))
+  (def paths (filter fs-path-not-dotted? (map (lambda (name) (path-expand name dir-path)) names)))
+  (for-each! paths (lambda (path)
+    (try
+      (def fs-info (file-info path))
+      (if (eq? 'directory (file-info-type fs-info))
+        (set! ret (append ret (fs-dir-source-files path)))
+        (when (source-file-path? path)
+          (set! ret (append ret [path]))))
+    (catch (e)
+      (errorf "=== ignoring FS err while scrutinizing path ~a: ~a" path e)))))
+  ret)
 
 
 (def (on-source-file-changes deleted created changed)
@@ -66,19 +87,26 @@
 
         ; first, grab actual Gerbil source file (not folder) events...
         (def file-events (filter file-event-check-ext changes))
-        (def file-paths-deleted (filter (file-event-check-type filechangetype-deleted) file-events))
-        (def file-paths-created (filter (file-event-check-type filechangetype-created) file-events))
-        (def file-paths-changed (filter (file-event-check-type filechangetype-changed) file-events))
+        (def file-events-deleted (filter (file-event-check-type filechangetype-deleted) file-events))
+        (def file-events-created (filter (file-event-check-type filechangetype-created) file-events))
+        (def file-events-changed (filter (file-event-check-type filechangetype-changed) file-events))
 
         ; sadly, folder events (such as moving or deleting one) are not
         ; translated by vscode (and maybe also not by other LSP clients)
         ; into just individual file events, so we have to do it ourselves here
-        (for-each! (map file-event-file-path changes) (lambda (path)
-          (debugf "TODO: maybe dir? ~a" path)))
+        (for-each! changes (lambda ((file-event :- FileEvent))
+          (def path (file-event-file-path file-event))
+          (when (and (not (eq? filechangetype-changed file-event.type)) (fs-path-not-dotted? path))
+            (try
+              (def fs-info (file-info path))
+              (when (eq? 'directory (file-info-type fs-info))
+                (debugf "ISDIR:~a" path))
+            (catch (e)
+              (errorf "=== ignoring FS err while scrutinizing path ~a: ~a" path e))))))
 
-        (on-source-file-changes (map file-event-file-path file-paths-deleted)
-                                (map file-event-file-path file-paths-created)
-                                (map file-event-file-path file-paths-changed))))))
+        (on-source-file-changes (filter fs-path-not-dotted? (map file-event-file-path file-events-deleted))
+                                (filter fs-path-not-dotted? (map file-event-file-path file-events-created))
+                                (filter fs-path-not-dotted? (map file-event-file-path file-events-changed)))))))
 
 
 (lsp-handler "textDocument/didOpen"

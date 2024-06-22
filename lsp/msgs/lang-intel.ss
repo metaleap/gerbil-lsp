@@ -42,7 +42,7 @@
       [(make-WorkspaceSymbol  name: "Gerbil"
                               kind: symbolkind-function
                               tags: []
-                              containerName: (string-append "TODO: call `defs-search` with `" params.query "`")
+                              containerName: (string-append "**TODO:** call `defs-search` with `" params.query "`")
                               location: (make-Location  uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
                                                         range: (make-Range  (make-Position 0 1)
                                                                             (make-Position 0 4))))])))

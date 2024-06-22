@@ -18,23 +18,17 @@ Since `ide` will have running some kind of _"ongoing / long-lived interpreter(is
 
 Necessary:
 
-- **on-root-folders-changed** with 2 lists, one of newly-added and one of newly-removed root folders
-  - called for the _initial_ list of root dirs shortly after the session starts (or as soon as a project / workspace has been opened in the editor session)
-  - called whenever users add or remove root folders to / from their currently-opened project / workspace
-  - called whenever a wholly other "workspace" / project (list of root dirs) is opened in the editor, replacing the previously-opened one
-    - in this scenario, _removed_ is the root dirs of the previously-opened workspace / project, and _added_ those of the newly-opened one
 - **on-source-file-changes** with 3 lists of Scheme source file paths, to be processed in this order:
-  - _deleted_: if this has multiple entries, it's usually because a whole dir of source files was just deleted or renamed
-  - _created_: these are not necessarily empty: might be on file copied/moved/renamed, or a buffer's first Save, or an outside-the-editor existing-file modification
-  - _changed_: for on-disk source file modifications, whether through Save or from outside the editor
-    - caution: some outside-the-editor file modifications are reported by some LSP clients (and so forwarded to `ide`) in _created_ &mdash; so any in _created_ that are already being tracked should be treated as _changed_ by the callee in `lsp`, if necessary
-- **on-source-file-edited**: this is not-yet-saved live edits — the full new buffer contents would be passed (unless for some reason `ide` would prefer list-of-atomic-edit-steps-applied? Under LSP would be just as easily doable, so `ide`'s choice.)
+  - _removed_ &mdash; source file deletions, or source file removals from the editor-side workspace / project
+  - _added_ &mdash; source file creations (they're not necessarily empty), or source file additions to the editor-side workspace / project
+  - _changed_ &mdash; on-disk source file modifications, whether through Save or from outside the editor
+- **on-source-file-edited**: this is not-yet-saved live edits — the source file path and full current editor-side buffer contents will be passed
 
-Note, there is no _renamed_:
+Note, there is no _renamed_ in _on-source-file-changes_ &mdash;
 - due to certain LSP client (at least VSCode) quirks, file-rename events do not get subscribed to by `lsp` from the clients on principle;
-- instead, correct and complete sequences of _deleted_ and _created_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide`.
+- instead, correct and complete combinations of _deleted_ and _created_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide` (hence, the importance of processing _deleted_ before _created_)
 
-Optional, if it makes sense for (or is of interest to) `ide`:
+Optional, **if** it is of any practical interest to `ide`:
 
 - **on-source-file-opened**
 - **on-source-file-closed**
