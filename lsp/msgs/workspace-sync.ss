@@ -7,13 +7,13 @@
         :std/logger
         :std/misc/list
         :std/misc/path
+        :std/misc/string
         ../handling
         ./types)
 
 
 (def source-file-extensions [".ss"])
-(def all-source-files [])
-(def workspace-folders [])
+(def source-file-paths [])
 
 
 (def (lsp-uri->file-path uri)
@@ -28,6 +28,12 @@
 
 (def (fs-path-not-dotted? path)
   (not (string-contains path "/.")))
+
+
+(def (fs-path-in-dir? dir-path)
+  (lambda (path)
+    (let (dir-path (string-append (string-trim-suffix "/" dir-path) "/"))
+      (string-prefix? dir-path path))))
 
 
 (def (fs-dir-source-files dir-path)
@@ -46,12 +52,18 @@
   ret)
 
 
-(def (on-source-file-changes deleted created changed)
+(def (on-source-file-changes removed added changed)
+  (set! removed (filter (lambda (path) (member path source-file-paths)) (unique removed)))
+  (def changed-in-added (filter (lambda (path) (member path source-file-paths)) added))
+  (def added-in-changed (filter (lambda (path) (not (member path source-file-paths))) changed))
+  (set! added (append added-in-changed (filter (lambda (path) (member path changed-in-added)) added)))
+  (set! changed (append changed-in-added (filter (lambda (path) (member path added-in-changed)) changed)))
   ; TODO: call `ide/on-source-file-changes`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-  (unless (null? deleted)
-    (debugf "=== source files deleted ~a" deleted))
-  (unless (null? created)
-    (debugf "=== source files created: ~a" created))
+  (unless (null? removed)
+    (set! source-file-paths (filter (lambda (path) (not (member path removed))) source-file-paths))
+    (debugf "=== source files removed ~a" removed))
+  (unless (null? added)
+    (debugf "=== source files added: ~a" added))
   (unless (null? changed)
     (debugf "=== source files changed ~a" changed)))
 
@@ -59,14 +71,18 @@
 (def (on-workspace-folders-changed added removed)
   (def (folder->path (folder :- WorkspaceFolder))
     (lsp-uri->file-path folder.uri))
-  (let ((added (map folder->path added))
-        (removed (map folder->path removed)))
-    (def (not-removed old-folder) (not (member old-folder removed)))
-    (let (sans-removed (if (null? removed) workspace-folders (filter not-removed workspace-folders)))
-      (let (not-already (lambda (new-folder) (not (member new-folder sans-removed))))
-        (set! workspace-folders (append sans-removed (filter not-already added)))
-        ; TODO: call `ide/on-root-folders-changed`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
-        (debugf "=== workspace folders are now: ~a" workspace-folders)))))
+  (let ((added (filter fs-path-not-dotted? (map folder->path added)))
+        (removed (filter fs-path-not-dotted? (map folder->path removed))))
+    (def file-paths-removed [])
+    (def file-paths-added [])
+    (for-each! removed (lambda (dir-path)
+      (set! file-paths-removed (append file-paths-removed (filter (fs-path-in-dir? dir-path) source-file-paths)))))
+    (for-each! added (lambda (dir-path)
+      (let (file-paths (fs-dir-source-files dir-path))
+        (for-each! file-paths (lambda (file-path)
+          (unless (member file-path source-file-paths)
+              (set! file-paths-added (append file-paths-added [file-path]))))))))
+    (on-source-file-changes file-paths-removed file-paths-added [])))
 
 
 (lsp-handler "workspace/didChangeWorkspaceFolders"
@@ -113,8 +129,9 @@
   (lambda (params)
     (using (params (make-DidOpenTextDocumentParams params) :- DidOpenTextDocumentParams)
       (using (it params.textDocument :- TextDocumentItem)
-        (when (string=? it.languageId "gerbil")
-          (debugf "=== source file opened: ~a" (lsp-uri->file-path it.uri)))))))
+        (let (source-file-path (lsp-uri->file-path it.uri))
+          (when (source-file-path? source-file-path)
+            (debugf "=== source file opened: ~a" source-file-path)))))))
 
 
 (lsp-handler "textDocument/didClose"
