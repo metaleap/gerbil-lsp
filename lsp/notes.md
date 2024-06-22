@@ -114,7 +114,7 @@ Results' source file paths _can_ include files outside the currently opened work
 
 ## _`occurrences`_
 
-[Demo scenario](https://i.sstatic.net/3gNYO.png)
+[Demo scenario](https://t.ly/__6J2) (alt: https://i.sstatic.net/3gNYO.png)
 
 Args:
 - the current source file path
@@ -291,12 +291,12 @@ To clarify by example:
 
 ## _`callers`_
 
-[Demo scenario](https://i.sstatic.net/AxfS2.gif)
+[Demo scenario](https://t.ly/xRC6M) (alt: https://i.sstatic.net/AxfS2.gif)
 
 ...todo
 
 ## _`callees`_
 
-[Demo scenario](https://i.sstatic.net/HKU3h.png)
+[Demo scenario](https://t.ly/eML6z) (alt: https://i.sstatic.net/HKU3h.png)
 
 ...todo
