@@ -60,7 +60,6 @@
   (def added-in-changed (filter (lambda (path) (not (member path source-file-paths))) changed))
   (set! added (append added-in-changed (filter (lambda (path) (not (member path changed-in-added))) added)))
   (set! changed (append changed-in-added (filter (lambda (path) (not (member path added-in-changed))) changed)))
-  ; TODO: call `ide/on-source-file-changes`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
   (unless (null? removed)
     (set! source-file-paths (filter (lambda (path) (not (member path removed))) source-file-paths))
     (debugf "=== source files removed ~a" removed))
@@ -68,7 +67,9 @@
     (set! source-file-paths (unique (append source-file-paths added)))
     (debugf "=== source files added: ~a" added))
   (unless (null? changed)
-    (debugf "=== source files changed ~a" changed)))
+    (debugf "=== source files changed ~a" changed))
+  ; TODO: call `ide/on-source-file-changes`, see https://github.com/metaleap/gerbil-lsp/blob/main/lsp/notes.md#1-workspace-syncing
+  )
 
 
 (def (on-workspace-folders-changed added removed)
@@ -115,7 +116,6 @@
         ; into just individual file events, so we have to do it ourselves here
         (for-each! changes (lambda ((file-event :- FileEvent))
           (def path (file-event-file-path file-event))
-          (debugf "EVT ~a ~a ~a" file-event path (fs-path-not-dotted? path))
           (when (fs-path-not-dotted? path)
             (cond ; TODO: `case` seems bugged with non-literal case-exprs, so `cond` for now
               ((eq? file-event.type filechangetype-deleted)
