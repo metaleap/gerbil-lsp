@@ -70,10 +70,6 @@ Desirable fields, as feasible / applicable:
   - **kind**: one of `ide`-defined known-enumerants (eg. `'function`, `'var`, `'struct`, `'class`, `'iface`, `'macro`, `'other` etc)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
   - **deprecated** bool (if there's a "defacto standard" notation for that in Gerbil)
-  - **description**:
-    - `#f` or `""` or
-    - existing markdown doc or
-    - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
   - **detail**: `#f` or `""` or could be a non-markdown, plain text of extra information, for example:
     - signature or type name, if known
     - failing both: for locals, name(s) of parent(s)
@@ -149,7 +145,11 @@ Results:
 - a list of symbol-info structures like also returned above in `defs-in-file` and `defs-search`, with these extra considerations:
   - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
   - **children**: not populated (or even computed)
-  - **detail** to be augmented with the `import` where pertinent
+  - **detail** as described but further augmented with the `import` where pertinent
+  - **description** as an additional field:
+    - `#f` or `""` or
+    - existing markdown doc or
+    - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
 
 **Everything that's in scope:**
 - any top-level def/decl in the current file
@@ -179,7 +179,7 @@ Args:
 
 Results:
 - a list of markdown info strings, which might for example contextually surface:
-  - if a symbol: the `description` as described above in `defs-in-file` / `defs-search` / `completions`
+  - if a symbol: the `description` as described above in `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a macro ref: the expansion of that macro call as a markdown `` ```scheme `` syntax block
   - if a string literal: the byte length and rune length (can be handy)
@@ -249,7 +249,7 @@ Results:
 - a list of zero-or-more signature-info structs containing:
   - **signature**: the syntactical form clarifying the signature, ie. `(name arg arg)` or `(name arg . rest)` etc.
     - This should not be a direct source extract of the func/macro def's name-and-args (might include commented-forms, might be multi-line etc) but instead pieced together freshly from the relevant AST
-  - **description**: same as first described above in `defs-in-file`
+  - **description**: same as first described above in `completions`
 
 Call forms might not only refer to resolved func-valued defs but also macros and native/primitive/special forms. Might be neat to have 'em all! But func calls of course the most important.
 

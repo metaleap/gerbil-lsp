@@ -4,7 +4,8 @@
         :std/logger
         ../handling
         ./types
-        ./workspace
+        ./workspace-sync
+        ./types-outgoing
         ./all-outgoing-requests)
 
 (def +server-name+        "gxlsp")
@@ -43,13 +44,18 @@
               ("capabilities" (hash
                                   ("workspace" (hash
                                     ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))))
-                                  ; ("textDocumentSync"
-                                  ;   (hash ("openClose" #f)
-                                  ;         ("change" 1)))
+                                  ("textDocumentSync"
+                                    (hash ("openClose" #t)
+                                          ("change" 1)))
                                   ; ("notebookDocumentSync"
                                   ;   (hash ("notebook" "*.gerbilrepl")))
                                   ("positionEncoding"
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
+
+                                  ("documentSymbolProvider"
+                                    (hash ("label" "FooBarBaz")))
+                                  ("workspaceSymbolProvider"
+                                    #t)
 
                                   ("completionProvider"
                                     #f) ; when changing, it's an object not #t!
@@ -69,10 +75,6 @@
                                     #f)
                                   ("documentHighlightProvider"
                                     #f)
-                                  ("documentSymbolProvider"
-                                    #f)
-                                  ("workspaceSymbolProvider"
-                                    #f) ; when changing, it's an object not #t!
                                   ("codeActionProvider"
                                     #f) ; when changing, it's an object not #t!
                                   ("codeLensProvider"
@@ -102,13 +104,12 @@
 
 (lsp-handler "initialized"
   (lambda (params)
-    (lsp-req-workspace-workspacefolders)
-    (let* ( (glob-exts (if (fx= 1 (length source-file-extensions)) ; special-casing due to vscode quirk
-                        (list-ref source-file-extensions 0)
-                        (string-append "{" (string-join source-file-extensions ",") "}")))
-            (watcher (make-FileSystemWatcher
-                        kind: watchkind-all
-                        globPattern: (string-append "**/*" glob-exts))))
-      (lsp-req-client-registercapability "workspace/didChangeWatchedFiles"
+    (lsp-req-workspace-workspacefolders!)
+    ; we're not "making our own file-watcher" here below,
+    ; but instead are telling the client to file-watch for us.
+    ; sadly it doesn't suffice to just watch **/*.ss, because vscode sends no
+    ; individual file events from certain folder events like moved or deleted
+    (let (watcher (make-FileSystemWatcher kind: watchkind-all globPattern: "**/*"))
+      (lsp-req-client-registercapability! "workspace/didChangeWatchedFiles"
                                           (make-DidChangeWatchedFilesRegistrationOptions
                                             watchers: [watcher])))))
