@@ -114,14 +114,13 @@
         ; into just individual file events, so we have to do it ourselves here
         (for-each! changes (lambda ((file-event :- FileEvent))
           (def path (file-event-file-path file-event))
-          (debugf "EVT ~a ~a" file-event path)
+          (debugf "EVT ~a ~a ~a" file-event path (fs-path-not-dotted? path))
           (when (fs-path-not-dotted? path)
-            (case file-event.type
-              ((filechangetype-deleted)
-                (debugf "DELETED~a" path)
+            (cond ; TODO: `case` seems bugged with non-literal case-exprs, so `cond` for now
+              ((eq? file-event.type filechangetype-deleted)
                 (set! file-paths-deleted (append  file-paths-deleted
                                                   (filter (fs-path-in-dir? path) source-file-paths))))
-              ((filechangetype-created)
+              ((eq? file-event.type filechangetype-created)
                 (try
                   (def fs-info (file-info path))
                   (when (eq? 'directory (file-info-type fs-info))
