@@ -10,7 +10,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 - [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
   - [ast-parents](#ast-parents), [callers](#callers), [callees](#callees), [super-types], [sub-types]
 
-# 1. Workspace syncing
+# 1. "Workspace" / source-file tracking & sync
 
 **No file-watchings in `ide` or `lsp`!**
 
@@ -19,8 +19,8 @@ Since `ide` will have running some kind of _"ongoing / long-lived interpreter(is
 Necessary:
 
 - **on-source-file-changes** with 3 lists of Scheme source file paths, to be processed in this order:
-  - _removed_ &mdash; source file deletions, or source file removals from the editor-side workspace / project
-  - _added_ &mdash; source file creations (they're not necessarily empty), or source file additions to the editor-side workspace / project
+  - _removed_ &mdash; source file deletions, or source file removals from the editor-side "workspace" / project
+  - _added_ &mdash; source file creations (they're not necessarily empty), or source file additions to the editor-side "workspace" / project
   - _changed_ &mdash; on-disk source file modifications, whether through Save or from outside the editor
 - **on-source-file-edited**: this is not-yet-saved live edits — the source file path and full current editor-side buffer contents will be passed
 
@@ -108,14 +108,15 @@ Args:
       - if on interface def-or-ref or interface method def-or-ref: known implicit implementations of that interface or method
       - if on class def-or-ref or class method def-or-ref: interfaces or interface methods implicitly implemented by that
     - any others later on if & as they come to mind in the community
-      - but note, [callers](#callers) and [callees](#callees) are separate as they return hierarchies rather than a flat list
+      - but note, [callers](#callers) and [callees](#callees) are already in here and separate from `lookup`, as they return hierarchies rather than a flat list
 
 Results:
 - a list of zero more "locations" (pairs of source file path and _range_)
 
-Results' source file paths _can_ include files outside the currently opened workspace / "root folders", technically:
-- so for `'def`, _should_ include any find(s) in `std/*`, `gerbil/*` etc (paths located presumably usually somewhere in `/opt/gerbil/src`)
-- not so for `'refs`: even if the def-referred-to-at-position is in `std/*`, `gerbil/*` etc., we'll only want such refs to it as are located in the currently-opened workspace / "root folders" (so as to not also have to stare at a listing of 100s of refs from inside `std/*`, `gerbil/*` etc.)
+Results' source file paths _may_ include files other than the `on-source-file-changes`-introduced (ie. editor-side) ones, depending on the given lookup kind:
+- for `'def`, _should_ include any find(s) eg. in `std/*`, `gerbil/*` etc (paths located presumably usually somewhere in `/opt/gerbil/src`)
+- **but** not so for `'refs`: even if the def-referred-to-at-position is in `std/*`, `gerbil/*` etc., we'll only want such refs to it as are located in the "editor-side source files" (`on-source-file-changes`-introduced ones), so as to not also have to stare at a listing of hundreds of refs from inside `std/*`, `gerbil/*` etc.
+  - to illustrate: when I look up references to `string-append`, I want to see "my currently-opened projects' uses" of it only, not other ones that `ide` somehow may also happen to know about
 
 ## _`occurrences`_
 
@@ -157,7 +158,7 @@ Results:
 - any made available by the file's existing `import`s
 - generally macro-introduced identifiers in scope, see [considerations in `defs-search`](#macro-related-subleties)
 - bonus stretch goals:
-  - any from any not-yet-imported `std/*` / `gerbil/*` etc or not-yet-imported workspace-local source files with an additional "import edit" to be applied in-editor to the current source (such a text-edit being simply an (insert-text,insert-position) pair)
+  - any from any not-yet-imported `std/*` / `gerbil/*` / pkg deps etc or not-yet-imported project/package-local source files, together with an additional "import edit" struct to be applied in-editor to the current source to import that &mdash; such a text-edit being simply an (insert-text,insert-position) pair
 - plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
 
 **Further filtering apart from in-scope-ness:**
@@ -212,14 +213,15 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- `#f` if neither a def nor a ref (to a def located somewhere _inside_ the workspace) at the position
+- `#f` if position is not on an identifier to begin with
+- `#f` if identifier is not a def, or ref to a def, that is located in one of the `on-source-file-changes`-introduced source files
 - else: the _range_ of the identifier at the position
 
 ## _`rename`_
 
 [Demo scenario](https://code.visualstudio.com/assets/docs/editor/refactoring/rename.png)
 
-Workspace-wide def rename.
+Project-wide def rename across all `on-source-file-changes`-introduced tracked source files.
 
 Args:
 - the current source file path
@@ -236,8 +238,10 @@ Results:
 
 [Demo scenario 1](https://code.visualstudio.com/assets/docs/editor/editingevolved/errors.png) · [Demo scenario 2](https://code.visualstudio.com/assets/docs/editor/editingevolved/errorsinline.png)
 
+This is the sole API surface to handle any and all warnings, errors, hints, lints, etc.
+
 Args:
-- a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably) / **re-analyzed**.
+- a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever tracked source files (but only the `on-source-file-changes`-introduced ones) are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably) / **re-analyzed**.
 
 Results:
 - `(void)`
