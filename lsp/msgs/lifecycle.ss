@@ -53,18 +53,18 @@
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
 
                                   ("documentSymbolProvider"
-                                    (hash ("label" "FooBarBaz")))
+                                    (hash ("label" "TODO_DocSym_Label")))
                                   ("workspaceSymbolProvider"
+                                    #t)
+                                  ("definitionProvider"
+                                    #t)
+                                  ("hoverProvider"
                                     #t)
 
                                   ("completionProvider"
                                     #f) ; when changing, it's an object not #t!
                                   ("signatureHelpProvider"
                                     #f) ; when changing, it's an object not #t!
-                                  ("hoverProvider"
-                                    #t)
-                                  ("definitionProvider"
-                                    #f)
                                   ("declarationProvider"
                                     #f)
                                   ("typeDefinitionProvider"

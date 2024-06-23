@@ -52,9 +52,9 @@ Args:
 - a bool whether full tree hierarchy is wanted or just flat list of top-level-defs
 
 Results:
-- a tree hierarchy of symbol `def`s / decls occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbols (only computed and populated if the abovementioned bool arg wants it).
+- a tree hierarchy of symbol `def`s / decls / symbol names occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbol defs (only computed and populated if the abovementioned bool arg wants it).
 
-Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, interface etc.
+Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` etc.
 
 Mandatory fields per list item:
   - **name**
@@ -65,15 +65,17 @@ Desirable fields, as feasible / applicable:
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
   - **deprecated** bool (if there's a "defacto standard" notation for that in Gerbil)
   - **detail**: `#f` or `""` or could be a non-markdown, plain text of extra information, for example:
-    - signature or type name, if known
-    - failing both: for locals, name(s) of parent(s)
+    - signature or type information (annotation, inference) etc
+    - failing both: for locals, next-higher ancestor name (def or let or using)
     - or whatever else that's "good to know" and pertinent to and available for the def/decl
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
-**Extra nice to have:**
+### Macro-related subleties:
 
-"Expansion" of custom `defrule`s or custom macros starting with the `def`-prefix, for example: although [this defrule named 'defhandler'](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _calls_ such as eg. [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as defs in _those_ source files
+- Most desirable, perhaps indispensible, in Scheme land: "expansion" (to symbol-defs to yield here) of custom `defrule`s or custom macros starting with the `def`-prefix, for example: although [this defrule named 'defhandler'](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _callers_ such as eg. [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as defs in _those_ source files
+- More generalized, many macros are designed to introduce caller-specified identifiers into their bodies' scopes that need to be captured in the tree hierarchy, ie. whether `let`s reduce to `lambda`s or not, even some `my-custom-let` doing so introduces a _macro-caller-specified_ identifier to its body and so it should show up in the returned symbol hierarchy.
+- At the same time, _some_ macros follow a fashion of also introducing into their bodies scopes their own well-known (not caller-specified) magic identifiers (`it` as a commonly-known example) &mdash; while we **would** want those to be listed in [completions](#completions), we would **not** want them in `defs-in-file` (or `defs-search`).
 
 ## _`defs-search`_
 
@@ -136,6 +138,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
 
 Results:
+- empty list if in a num / char / string literal (but not quoted-symbol "literal" =)
 - a list of symbol-info structures like also returned above in `defs-in-file` and `defs-search`, with these extra considerations:
   - **name**: the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
   - **children**: not populated (or even computed)
@@ -145,18 +148,18 @@ Results:
     - existing markdown doc or
     - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
 
-**Everything that's in scope:**
+**Only what's in scope at position:**
 - any top-level def/decl in the current file
 - ancestor locals in scope
 - any made available by the file's existing `import`s
+- generally macro-introduced identifiers in scope, see [considerations in `defs-search`](#macro-related-subleties)
 - bonus stretch goals:
   - any from any not-yet-imported `std/*` / `gerbil/*` etc or not-yet-imported workspace-local source files with an additional "import edit" to be applied in-editor to the current source (such a text-edit being simply an (insert-text,insert-position) pair)
 - plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
 
-**Filtering:**
+**Further filtering apart from in-scope-ness:**
 - none if a non-identifier-compatible char (braces parens whitespace etc) is just before current-position
-- none if in a num literal or (begun) string literal
-- by the identifier-compatible text fragment directly before the current-position
+- else, filtered by the identifier-compatible text fragment directly before the current-position
   - prefix matches first, substring matches afterwards (they matter, too, as auto-complete is often a search attempt)
 
 **On "dot completions":** imho, since this sugar is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:

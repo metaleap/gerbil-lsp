@@ -277,3 +277,16 @@
 (defmethod {:init! WorkspaceSymbolParams}
   (lambda (this json-obj) (when json-obj
     (set! this.query (hash-get json-obj "query")))))
+
+
+
+(defclass (DefinitionParams TextDocumentPositionParams)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! DefinitionParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))
