@@ -24,14 +24,12 @@ Necessary:
   - _changed_ &mdash; on-disk source file modifications, whether through Save or from outside the editor
 - **on-source-file-edited**: this is not-yet-saved live edits — the source file path and full current editor-side buffer contents will be passed
 
-Note, there is no _renamed_ in _on-source-file-changes_ &mdash;
-- due to certain LSP client (at least VSCode) quirks, file-rename events do not get subscribed to by `lsp` from the clients on principle;
-- instead, correct and complete combinations of _removed_ and _added_ reflecting such renames will be reported by clients to `lsp` and thus issued to `ide` (hence, the importance of processing _removed_ before _added_)
-
 Optional, **if** it is of any practical interest to `ide` (for example to "prioritize" analyses / refreshes of opened files vs. all the others or some such)
 
 - **on-source-file-opened**
 - **on-source-file-closed**
+
+(All file and folder _rename_ events result in `on-source-file-changes` calls with corresponding _removed_ / _added_ combinations, because VSCode alone showed that LSP clients cannot be relied upon to furnish sufficiently-robust rename watching and reporting.)
 
 **All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho) and hence "client-side", whether that's LSP-speaking text editors (they do that already) or any other `ide` consumers.
 
