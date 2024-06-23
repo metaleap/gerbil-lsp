@@ -59,7 +59,7 @@
                                   ("definitionProvider"
                                     #t)
                                   ("referencesProvider"
-                                    #f)
+                                    #t)
                                   ("hoverProvider"
                                     #t)
 

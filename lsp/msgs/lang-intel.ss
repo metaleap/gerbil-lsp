@@ -6,7 +6,8 @@
         :std/text/json
         ../handling
         ./types-incoming
-        ./types-outgoing)
+        ./types-outgoing
+        ./workspace-sync)
 
 
 (lsp-handler "textDocument/documentSymbol"
@@ -51,34 +52,37 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#lookup
     (using (params (make-DefinitionParams params) :- DefinitionParams)
-      [ (make-Location uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      [ (make-Location uri: source-file-path
                       range: (make-Range  (make-Position 0 1)
                                           (make-Position 0 4)))
-        (make-Location uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
+        (make-Location uri: source-file-path
                       range: (make-Range  (make-Position 2 1)
-                                          (make-Position 2 4)))])))
+                                          (make-Position 2 4)))]))))
 
 
 (lsp-handler "textDocument/references"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#lookup
     (using (params (make-ReferenceParams params) :- ReferenceParams)
-      [ (make-Location uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
-                      range: (make-Range  (make-Position 0 1)
-                                          (make-Position 0 4)))
-        (make-Location uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
-                      range: (make-Range  (make-Position 2 1)
-                                          (make-Position 2 4)))])))
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        [ (make-Location uri: source-file-path
+                        range: (make-Range  (make-Position 0 1)
+                                            (make-Position 0 4)))
+          (make-Location uri: source-file-path
+                        range: (make-Range  (make-Position 2 1)
+                                            (make-Position 2 4)))]))))
 
 
 (lsp-handler "textDocument/hover"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#info-tips
-    (using (hp (make-HoverParams params) :- HoverParams)
-      (let (content (format "**TODO:** call `ide/info-tips` with `~a` and L~a,C~a."
-                                (TextDocumentIdentifier-uri hp.textDocument)
-                                (Position-line hp.position)
-                                (Position-character hp.position)))
-        (make-Hover range: (void)
-                    contents: (make-MarkupContent kind: markupkind-markdown
-                                                  value: content))))))
+    (using (params (make-HoverParams params) :- HoverParams)
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        (let (content (format "**TODO:** call `ide/info-tips` with `~a` and L~a,C~a."
+                                  source-file-path
+                                  (Position-line params.position)
+                                  (Position-character params.position)))
+          (make-Hover range: (void)
+                      contents: (make-MarkupContent kind: markupkind-markdown
+                                                    value: content)))))))
