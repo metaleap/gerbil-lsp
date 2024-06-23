@@ -13,6 +13,10 @@
 (def source-file-path ())
 
 
+(def (file-path->lsp-uri file-path)
+  (string-append "file://" file-path))
+
+
 (lsp-handler "textDocument/documentSymbol"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-in-file
@@ -122,3 +126,32 @@
           (make-Hover range: (void)
                       contents: (make-MarkupContent kind: markupkind-markdown
                                                     value: content)))))))
+
+
+(lsp-handler "textDocument/prepareRename"
+  (lambda (params)
+    (debugf "PR01")
+    ; TODO: produce real results obtained from ../notes.md#can-rename
+    (using (params (make-PrepareRenameParams params) :- PrepareRenameParams)
+      (debugf "PR02")
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        (debugf "PR03")
+        (let (ret (make-Range params.position
+                              (make-Position  (Position-line params.position)
+                                              (+ 4 (Position-character params.position)))))
+          (debugf "PR04")
+          ret)))))
+
+
+(lsp-handler "textDocument/rename"
+  (lambda (params)
+    ; TODO: produce real results obtained from ../notes.md#rename
+    (using (params (make-RenameParams params) :- RenameParams)
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        (make-WorkspaceEdit
+          changes: (hash ((file-path->lsp-uri source-file-path) [
+            (make-TextEdit  newText: params.newName
+                            range: (make-Range  params.position
+                                                (make-Position  (Position-line params.position)
+                                                                (+ 4 (Position-character params.position)))))
+          ])))))))

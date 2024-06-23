@@ -154,3 +154,14 @@
 (def completionitemkind-event 23)
 (def completionitemkind-operator 24)
 (def completionitemkind-typeparameter 25)
+
+
+(defclass (WorkspaceEdit JSON)
+  ( changes)
+  final: #t)
+
+
+(defclass (TextEdit JSON)
+  ( (range : Range)
+    newText)
+  final: #t)

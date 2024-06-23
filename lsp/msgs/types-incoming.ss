@@ -325,3 +325,30 @@
 (defmethod {:init! CompletionParams}
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (PrepareRenameParams TextDocumentPositionParams)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! PrepareRenameParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (RenameParams TextDocumentPositionParams)
+  ( newName)
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! RenameParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj)
+    (set! this.newName (hash-get json-obj "newName")))))

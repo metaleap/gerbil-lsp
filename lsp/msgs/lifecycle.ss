@@ -66,6 +66,8 @@
                                     #t)
                                   ("hoverProvider"
                                     #t)
+                                  ("renameProvider"
+                                    (hash ("prepareProvider" #t)))
 
                                   ("signatureHelpProvider"
                                     #f) ; when changing, it's an object not #t!
@@ -82,8 +84,6 @@
                                   ("documentFormattingProvider"
                                     #f)
                                   ("documentRangeFormattingProvider"
-                                    #f)
-                                  ("renameProvider"
                                     #f)
                                   ("executeCommandProvider"
                                     (hash ("commands" [])))
