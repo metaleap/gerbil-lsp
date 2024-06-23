@@ -6,7 +6,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **Language intel quick jumps:**
 - [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
-  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [doc-tips](#doc-tips), [can-rename](#can-rename), [rename](#rename), [on-file-issues-changed](#on-file-issues-changed), [signatures](#signatures)
+  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-tips](#info-tips), [can-rename](#can-rename), [rename](#rename), [on-file-notices-changed (diagnostics)](#on-file-notices-changed), [signatures](#signatures)
 - [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
   - [ast-parents](#ast-parents), [callers](#callers), [callees](#callees), [super-types], [sub-types]
 
@@ -108,6 +108,7 @@ Args:
       - if on interface def-or-ref or interface method def-or-ref: known implicit implementations of that interface or method
       - if on class def-or-ref or class method def-or-ref: interfaces or interface methods implicitly implemented by that
     - any others later on if & as they come to mind in the community
+      - but note, [callers](#callers) and [callees](#callees) are separate as they return hierarchies rather than a flat list
 
 Results:
 - a list of zero more "locations" (pairs of source file path and _range_)
@@ -168,7 +169,7 @@ Results:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`, same for methods), ie. "there _is_ no 'dot-completion' (special handling of dots)"
 
-## _`doc-tips`_
+## _`info-tips`_
 
 [Demo scenario](https://user-images.githubusercontent.com/33861896/91145912-78012a00-e6b6-11ea-9e98-3dd8d04e89c6.png)
 
@@ -177,15 +178,32 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- a list of markdown info strings, which might for example contextually surface:
-  - if a symbol: the `description` as described above in `completions`
-  - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
-  - if a macro ref: the expansion of that macro call as a markdown `` ```scheme `` syntax block
-    - that's reader-intuitive "immediately-next" expansion — not the "final full expansion" into IR or nothing-but-lambdas =)
-  - if a string literal: the byte length and rune length (can be handy)
-  - if a fixnum or char literal: the value in the base of decimal, octal, hex
-  - any other infos / metadata already lying around for free
-- the _range_ (start-and-end-pos in the source file) of the actual form / AST node that the above doc-tips apply to
+- a list of contextual information bites, structured three-fielded like so:
+  - **name** — one of `ide`-defined well-known enumerants such as eg. `description`, `signature`, `type`, `name`, etc.
+  - **format** — one of `ide`-defined well-known enumerants such as eg. `plaintext`, `markdown`, `scheme`
+  - **value** — the actual info-bite as a string
+- the _range_ (start-and-end-pos in the source file) of the actual form / AST node that the specified current position is on
+
+Result info-bit **ideas** to represent and return:
+- If on a symbol ref or def:
+  - `description`, format `markdown`: as per the `description` described above in `completions`
+  - `signature`, format `scheme`: if known callable
+  - `type`, format `scheme`: if known (annotated or inferred) for that def or ref'd def
+  - `expansion`, format `scheme`, if identifier is a macro ref
+    - that's reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
+  - `import`, format `plaintext` or `scheme`: **whenever** identifier defined outside the current source file
+  - any other meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover UX
+    - but excluding stuff obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
+    - also excluding contextual "hints and tips" or code warnings / lints: covered by [diagnostics](#on-file-notices-changed)
+- If on a string literal
+  - `byte-length` (format: `plaintext`)
+  - `utf8-rune-length` (format: `plaintext`)
+- If on a fixnum or char literal
+  - `hex` (format: `scheme`)
+  - `octal` (format: `scheme`)
+  - `decimal` (format: `scheme`)
+
+Any other ideas? Just bring them into `ide`'s `info-tips` and let `lsp` and other well-known users know about and adopt them.
 
 ## _`can-rename`_
 
@@ -214,28 +232,28 @@ Results:
   - the _key_ is the source file path that the _value_ applies to
   - the _value_ is a list of _ranges_ representing _those_ occurrences of the old name in that file that _are_ references to the def-being renamed (don't want to rename shadowings etc)
 
-## _`on-file-issues-changed`_
+## _`on-file-notices-changed`_
 
 [Demo scenario 1](https://code.visualstudio.com/assets/docs/editor/editingevolved/errors.png) · [Demo scenario 2](https://code.visualstudio.com/assets/docs/editor/editingevolved/errorsinline.png)
 
 Args:
-- a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably)
+- a function (detailed below) passed by the caller that is to be invoked (by `ide`'s ongoing long-running background "interpreter(ish) whole-codebase session") whenever source files in the opened workspace / root folders are re-parsed / re-compiled / re-interpreted(-sans-effectful-top-level-blocks-presumably) / **re-analyzed**.
 
 Results:
 - `(void)`
 
 The callback func passed in by the caller would receive:
 - a source file path
-- a list of zero-or-more "issues" with that file, each such issue entry being a structure with:
-  - the _range_ in the source file that the issue applies to
+- a list of zero-or-more "notices" about that file, each such notice entry being a structure with:
+  - the _range_ in the source file that the notice applies to
   - an `ide`-defined severity/category enumeration such as eg. `'err`, `'warn`, `'hint`, `'info` (as applicable)
   - the (error / warning / info / etc) message itself
   - error / warning / etc code (number or ident) — if there's such a thing in Gerbil
-  - tags: optional list of such categorization tags as commonly yield special UI renditions other than squigglies, such as `'deprecated` (yields strike-thru font style) or `'unused` (yields faded text color)
+  - tags: optional list of such categorization tags as commonly induce special UI renditions other than squigglies, such as `'deprecated` (may induce strike-thru font-style rendition) or `'unused` (may induce faded text-color rendition)
 
-Of note, the list-of-issues for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-issues, empty or not.
+Of note, the list-of-notices for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-notices if changed at all (and ideally, only then) &mdash; whether it's empty or not.
 
-**The challenge:** a change in any one source file may well affect its direct or indirect (!) importers and those, too, should also be re-analyzed and have their list-of-issues re-announced over the callback arg (one such call per file).
+**A challenging necessity:** any change in any one source file can always potentially affect its direct importers (_and_ importers of _those_ too) &mdash; so all such direct or indirect dependent source files should hence also be re-analyzed and have their own list-of-notices re-announced (if changed) over the callback arg.
 
 ## _`signatures`_
 
@@ -243,15 +261,15 @@ Of note, the list-of-issues for a file may be empty upon its re-analysis when pr
 
 Args:
 - the current source file path
-- the current _position_ (see note at intro of part 2. above)
+- the current _position_ (see note at intro of part 2. above, as usual)
 
 Results:
 - a list of zero-or-more signature-info structs containing:
   - **signature**: the syntactical form clarifying the signature, ie. `(name arg arg)` or `(name arg . rest)` etc.
-    - This should not be a direct source extract of the func/macro def's name-and-args (might include commented-forms, might be multi-line etc) but instead pieced together freshly from the relevant AST
-  - **description**: same as first described above in `completions`
+    - This should not be a direct source extract of the func/macro def's name-and-args (might include commented-forms, might be multi-line etc) but instead pieced together readably a-fresh from the relevant AST
+  - **description**: markdown, same as first described above in `completions`
 
-Call forms might not only refer to resolved func-valued defs but also macros and native/primitive/special forms. Might be neat to have 'em all! But func calls of course the most important.
+Call forms might not only refer to resolved func-valued defs but also macros and native/primitive/special forms. Would be neat to have 'em all! But func calls of course the most important.
 
 **Should (imho) return empty list whenever** the form _at current position_ is not a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form.
 
