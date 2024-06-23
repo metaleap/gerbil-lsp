@@ -147,7 +147,7 @@
           (when (source-file-path? source-file-path)
             (lsp-notify-textDocument-publishDiagnostics! source-file-path [
               (make-Diagnostic  range: (make-Range (make-Position 0 0) (make-Position 0 4))
-                                severity: diagnosticseverity-hint
+                                severity: diagnosticseverity-information
                                 code: 0001
                                 source: "gerbil"
                                 tags: []

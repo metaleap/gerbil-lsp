@@ -35,14 +35,15 @@
                                               jsonrpc: json-rpc-version
                                               method: method
                                               params: params
-                                              id: req-id)
+                                              id: (if on-resp req-id (void)))
                                             on-resp)))
 
 
 ;; used by `./msgs/*.ss` modules to enqueue LSP requests to the client
 (def (lsp-notify! method params)
-  (hash-put! +lsp-new-outgoing-reqs+ #f (cons (json-rpc-request
-                                                    jsonrpc: json-rpc-version
-                                                    method: method
-                                                    params: params)
+  (hash-put! +lsp-new-outgoing-reqs+ (gensym) (cons (json-rpc-request
+                                                      jsonrpc: json-rpc-version
+                                                      method: method
+                                                      params: params
+                                                      id: (void))
                                                   #f)))

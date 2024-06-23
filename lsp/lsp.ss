@@ -6,6 +6,7 @@
         :std/io
         :std/sugar
         :std/logger
+        :std/misc/list
         :std/os/socket
         :std/text/json
         :std/net/json-rpc
@@ -77,8 +78,11 @@
           (write-msg! transport json-outgoing))
       ; send out requests that have piled up, if any
       (hash-for-each (lambda (req-id req-and-handler)
-          (hash-put! +pending-reqs+ req-id (cdr req-and-handler))
-          (write-msg! transport (car req-and-handler))
+          (using (req (car req-and-handler) :- json-rpc-request)
+            (let (handler (cdr req-and-handler))
+              (unless (void? req.id)
+                (hash-put! +pending-reqs+ req-id handler))
+              (write-msg! transport req)))
         ) +lsp-new-outgoing-reqs+)
       (hash-clear! +lsp-new-outgoing-reqs+)
       (catch (e)
@@ -106,6 +110,12 @@
   (def CR (char->integer #\return))
   (def LF (char->integer #\linefeed))
   (using ((obuf (Transport-writer transport) :- BufferedWriter))
+    (unless (hash-table? json-obj)
+        (set! json-obj (trivial-class->json-object json-obj))
+        (for-each! ["id" 'id id:] (lambda (key)
+          (let (val (hash-get json-obj key))
+            (when (or (not val) (void? val))
+              (hash-remove! json-obj key))))))
     (let ((out (json-object->bytes json-obj)))
       (debugf "=== SEND ~a" (bytes->string out))
       ;; Headers
