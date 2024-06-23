@@ -89,9 +89,9 @@ Args:
 - a bool whether full tree hierarchy is wanted or just flat list of top-level-defs
 
 Results:
-- a tree hierarchy of symbol `def`s / decls / symbol names occurring in the file. The root list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbol defs (only computed and populated if the abovementioned bool arg wants it).
+- a tree hierarchy (as a list with sub-lists) of symbol `def`s / decls / symbol names occurring in the file. The result list representing top-level symbol decls, with their own subsequent local `def`s, `let`s, `using`s etc being descendant / sub-tree symbol defs (only computed and populated if the abovementioned bool arg wants it) listed in the `children` field (see below).
 
-Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` etc.
+Gathering not just funcs and vars and macro defs, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` (fields and methods then being descendants) etc.
 
 Mandatory fields per list item:
   - **infos** — list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
