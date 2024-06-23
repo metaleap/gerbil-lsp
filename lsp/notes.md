@@ -185,7 +185,7 @@ Results:
 - any top-level def/decl in the current file
 - ancestor locals in scope
 - any made available by the file's existing `import`s
-- identifiers brought into a macro body's scope by the outer macro call, whether caller-specified (ie. the `Foo` in a `(defstruct Foo ())` macro call) or macro-originated (eg. widespread common example being `it`)
+- identifiers brought into scope by a macro call, whether caller-specified (ie. the `Foo` in a `(defstruct Foo ())` macro call, the `foo` in `using (foo ...`) or macro-emitted (eg. widespread common example being `it` made available by some macros to their caller-supplied body exprs)
 - bonus stretch goals:
   - any idents from any not-yet-imported `std/*` / `gerbil/*` / pkg deps etc or not-yet-imported project/package-local source files, _together with_ an additional "import edit" struct to be applied in-editor to the current source to import that &mdash; such a text-edit being simply an (insert-text,insert-position) pair
 - plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
