@@ -130,7 +130,7 @@ Args:
 - a "lookup kind": one of `ide`-defined known-enumerants:
   - at least:
     - `'def` (go to definition)
-      - whether `def` or `let` or `using` or `my-macro` introducing the identifier at position, whether in current file or cross-file import or package dep import or `std/*` / `gerbil/*` import etc &mdash; gotta find and yield the location  =)
+      - whether `def` or `let` or `using` or `my-similar-to-those-macro` introducing the identifier at position, whether in current file or cross-file import or package dep import or `std/*` / `gerbil/*` import etc &mdash; gotta find and yield the location  =)
     - `'refs` (list references)
       - whether we're positioned right _on_ an identifier decl (def / let / using / other), or merely on a ref _to_ one
   - optionally, if exciting-and-feasible:
@@ -173,7 +173,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above) at which auto-completion proposals will pop up
 
 Results:
-- empty list if in a num / char / string literal (but not quoted-symbol "literal" =)
+- empty list if in a num / char / string literal (but not quoted-symbol literal)
 - a list of symbol-info structures like also returned above in `defs-in-file` and `defs-search`, with these extra considerations:
   - `children`: not populated (or even computed)
   - `infos`:
@@ -185,9 +185,9 @@ Results:
 - any top-level def/decl in the current file
 - ancestor locals in scope
 - any made available by the file's existing `import`s
-- generally macro-introduced identifiers in scope, see [considerations in `defs-search`](#macro-related-subleties)
+- identifiers brought into a macro body's scope by the outer macro call, whether caller-specified (ie. the `Foo` in a `(defstruct Foo ())` macro call) or macro-originated (eg. widespread common example being `it`)
 - bonus stretch goals:
-  - any from any not-yet-imported `std/*` / `gerbil/*` / pkg deps etc or not-yet-imported project/package-local source files, together with an additional "import edit" struct to be applied in-editor to the current source to import that &mdash; such a text-edit being simply an (insert-text,insert-position) pair
+  - any idents from any not-yet-imported `std/*` / `gerbil/*` / pkg deps etc or not-yet-imported project/package-local source files, _together with_ an additional "import edit" struct to be applied in-editor to the current source to import that &mdash; such a text-edit being simply an (insert-text,insert-position) pair
 - plus any `'quoted-symbol` already occurring somewhere in this source file (since one is often slinging them around repeatedly / reusingly, at least in the use-case of enumerants / tags)
 
 **Further filtering apart from in-scope-ness:**
