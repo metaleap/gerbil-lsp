@@ -47,8 +47,8 @@ Lists of this single simple structure are returned by [defs-in-file](#defs-in-fi
 
 A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location. Per-item struct fields:
 - **name** — well-known name of the `InfoItem` (`ide` can define these as quoted-symbol enumerants), see list of ideas below
-- **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'bool`, `'symbol`
-- **value** — the actual info as a string, bool or symbol
+- **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'symbol`, `'none`
+- **value** — the actual info as a string or quoted-symbol
 
 `InfoItem` ideas, listed by their (suggested) `name`s:
 - Always included, no matter what's at the location:
@@ -66,8 +66,8 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
   - `'expansion`, format `'scheme`: if identifier is a macro ref, and inside a macro call
     - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
   - `'import`, format `'plaintext` or `'scheme`: **whenever** identifier defined outside the current source file
-  - `'deprecated`, format `'bool` (only if there's a "defacto standard" notation for that in Gerbil, and if `true`)
-  - `'unused`, format `'bool` (if tracked / known)
+  - `'unused`, format `'none`, content empty: only include if tracked / known and indeed the case for that ident
+  - `'deprecated`, format `'none`, content empty: only include if (there's a "defacto standard" notation for that in Gerbil, and if) indeed the case for that ident
 - If on a string literal
   - `'str-byte-length` (format: `'plaintext`)
   - `'str-utf8-rune-length` (format: `'plaintext`)
