@@ -61,7 +61,7 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
     - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
   - `'signature`, format `'scheme`: if known callable (func or macro)
     - multiple such items if multiple signatures known (eg. `case-lambda` or equivalents)
-    - the clean(ed) syntactical form clarifying the signature as it would look in a call, ie. `(name arg arg)` or `(name arg . rest)` etc: ie. this should not be a direct textual source extract of the func/macro def's initial (non-body) part (which might include commented-forms, might be multi-line etc) but instead pieced together readably a-fresh from the relevant AST
+    - want to produce here the clean(ed) syntactical form clarifying the signature as it would look in a call, ie. `(name arg arg)` or `(name arg . rest)` etc: ie. this should not be a direct textual source extract of the func/macro def's initial (non-body) part (which might include commented-forms or comments, might be multi-line etc) but instead pieced together readably a-fresh from the relevant AST
   - `'type`, format `'scheme`: if known (annotated or inferred) for that def or ref
   - `'expansion`, format `'scheme`: if identifier is a macro ref, and inside a macro call
     - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
@@ -95,12 +95,10 @@ Gathering not just funcs and vars and macro defs, but practically also all macro
 
 Mandatory fields per list item:
   - **infos** — list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
+    - desirable in addition to `'name`, as feasible / applicable / available: `'kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`.
   - **children** — to make the hierarchy tree happen (if wanted by the caller), list of zero or more direct-descendant symbol defs, ie. locals (each of the same struct type as this item)
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
-
-**Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available:
-- `'kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`.
 
 ### Macro-related subleties:
 
@@ -177,7 +175,7 @@ Results:
 - a list of symbol-info structures like also returned above in `defs-in-file` and `defs-search`, with these extra considerations:
   - `children`: not populated (or even computed)
   - `infos`:
-    - the `name` item is, as usual, the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
+    - the `'name` InfoItem is, as usual, the full name, not partial (ie if position is right after `ha` then the `'name` InfoItem is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
     - **Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available:
       - `'import`, `kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`
 
