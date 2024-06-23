@@ -45,7 +45,7 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 Lists of this single simple structure are returned by [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
-A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) gathers the various kinds of contextual information that `ide` knows about that location.
+A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location.
 
 - **name** — well-known name (`ide` can define these as quoted-symbol enumerants) of the `InfoItem`, see list of ideas below
 - **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'bool`, `'symbol`
