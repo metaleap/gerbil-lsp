@@ -97,7 +97,17 @@
     ; TODO: produce real results obtained from ../notes.md#completions
     (using (params (make-CompletionParams params) :- CompletionParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
-        []))))
+        (let (content (format "**TODO:** call `ide/info-tips` with `~a` and L~a,C~a."
+                                source-file-path
+                                (Position-line params.position)
+                                (Position-character params.position)))
+          [(make-CompletionItem label: "TODO"
+                                labelDetails: (make-CompletionItemLabelDetails detail: "_LD_detail_" description: "_LD_description_")
+                                kind: completionitemkind-function
+                                tags: []
+                                detail: "DetailGoesHere"
+                                documentation: (make-MarkupContent  kind: markupkind-markdown
+                                                                    value: content))])))))
 
 
 (lsp-handler "textDocument/hover"

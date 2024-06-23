@@ -111,3 +111,46 @@
 (def documenthighlightkind-text 1)
 (def documenthighlightkind-read 1)
 (def documenthighlightkind-write 1)
+
+
+(defclass (CompletionItemLabelDetails JSON)
+  ( detail
+    description)
+  final: #t)
+
+
+(defclass (CompletionItem JSON)
+  ( label
+    (labelDetails : CompletionItemLabelDetails)
+    kind
+    tags
+    detail
+    documentation
+    )
+  final: #t)
+
+(def completionitemkind-text 1)
+(def completionitemkind-method 2)
+(def completionitemkind-function 3)
+(def completionitemkind-constructor 4)
+(def completionitemkind-field 5)
+(def completionitemkind-variable 6)
+(def completionitemkind-class 7)
+(def completionitemkind-interface 8)
+(def completionitemkind-module 9)
+(def completionitemkind-property 10)
+(def completionitemkind-unit 11)
+(def completionitemkind-value 12)
+(def completionitemkind-enum 13)
+(def completionitemkind-keyword 14)
+(def completionitemkind-snippet 15)
+(def completionitemkind-color 16)
+(def completionitemkind-file 17)
+(def completionitemkind-reference 18)
+(def completionitemkind-folder 19)
+(def completionitemkind-enummember 20)
+(def completionitemkind-constant 21)
+(def completionitemkind-struct 22)
+(def completionitemkind-event 23)
+(def completionitemkind-operator 24)
+(def completionitemkind-typeparameter 25)
