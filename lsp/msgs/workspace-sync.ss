@@ -9,7 +9,9 @@
         :std/misc/path
         :std/misc/string
         ../handling
-        ./types-incoming)
+        ./types-incoming
+        ./types-outgoing
+        ./all-outgoing-messages)
 
 
 (def source-file-extensions [".ss"]) ; TODO: discuss & decide: add .scm or not?
@@ -143,6 +145,14 @@
       (using (it params.textDocument :- TextDocumentItem)
         (let (source-file-path (lsp-uri->file-path it.uri))
           (when (source-file-path? source-file-path)
+            (lsp-notify-textDocument-publishDiagnostics! source-file-path [
+              (make-Diagnostic  range: (make-Range (make-Position 0 0) (make-Position 0 4))
+                                severity: diagnosticseverity-hint
+                                code: 0001
+                                source: "gerbil"
+                                tags: []
+                                message: "TODO: take this out of `textDocument/didOpen` once `ide/on-file-notices-changed` is ready")
+              ])
             (debugf "=== source file opened: ~a" source-file-path)))))))
 
 
@@ -152,6 +162,7 @@
       (using (it params.textDocument :- TextDocumentIdentifier)
         (let (source-file-path (lsp-uri->file-path it.uri))
           (when (source-file-path? source-file-path)
+            (lsp-notify-textDocument-publishDiagnostics! source-file-path [])
             (debugf "=== source file closed: ~a" source-file-path)))))))
 
 

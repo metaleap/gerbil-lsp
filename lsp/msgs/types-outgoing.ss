@@ -5,6 +5,12 @@
         ./types-incoming)
 
 
+
+(def (file-path->lsp-uri file-path)
+  (string-append "file://" file-path))
+
+
+
 (defclass (Registration JSON)
   ( id
     method
@@ -177,3 +183,27 @@
     documentation ; null or MarkupContent
     )
   final: #t)
+
+
+(defclass (PublishDiagnosticsParams JSON)
+  ( uri
+    diagnostics) ; []Diagnostic
+  final: #t)
+
+
+(defclass (Diagnostic JSON)
+  ( (range : Range)
+    severity
+    code
+    source
+    message
+    tags)
+  final: #t)
+
+(def diagnosticseverity-error 1)
+(def diagnosticseverity-warning 2)
+(def diagnosticseverity-information 3)
+(def diagnosticseverity-hint 4)
+
+(def diagnostictag-unnecessary 1)
+(def diagnostictag-deprecated 2)

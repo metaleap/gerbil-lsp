@@ -6,7 +6,8 @@
         ./types-incoming
         ./types-outgoing
         ./workspace-sync
-        ./all-outgoing-requests)
+        ./all-outgoing-messages
+        ./workspace-sync)
 
 (def +server-name+        "gxlsp")
 (def +server-version+     "0.0.1")
@@ -104,12 +105,14 @@
 
 (lsp-handler "initialized"
   (lambda (params)
-    (lsp-req-workspace-workspacefolders!)
+    (lsp-request-workspace-workspaceFolders!
+      (lambda (all-workspace-folders)
+        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))
     ; we're not "making our own file-watcher" here below,
     ; but instead are telling the client to file-watch for us.
     ; sadly it doesn't suffice to just watch **/*.ss, because vscode sends no
     ; individual file events from certain folder events like moved or deleted
     (let (watcher (make-FileSystemWatcher kind: watchkind-all globPattern: "**/*"))
-      (lsp-req-client-registercapability! "workspace/didChangeWatchedFiles"
-                                          (make-DidChangeWatchedFilesRegistrationOptions
-                                            watchers: [watcher])))))
+      (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
+                                              (make-DidChangeWatchedFilesRegistrationOptions
+                                                watchers: [watcher])))))

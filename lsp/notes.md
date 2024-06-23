@@ -176,8 +176,7 @@ Results:
   - `children`: not populated (or even computed)
   - `infos`:
     - the `'name` InfoItem is, as usual, the full name, not partial (ie if position is right after `ha` then the `'name` InfoItem is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
-    - **Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available:
-      - `'import`, `kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`
+    - **Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available: `'import`, `kind`, `'deprecated`, `'signature`, `'type`, `'description`
 
 **Only list what's in scope at position:**
 - any top-level def/decl in the current file
@@ -257,7 +256,7 @@ The callback func passed in by the caller would receive:
   - an `ide`-defined severity/category enumeration such as eg. `'err`, `'warn`, `'hint`, `'info` (as applicable)
   - the (error / warning / info / etc) message itself
   - error / warning / etc code (number or ident) — if there's such a thing in Gerbil
-  - tags: optional list of such categorization tags as commonly induce special UI renditions other than squigglies, such as `'deprecated` (may induce strike-thru font-style rendition) or `'unused` (may induce faded text-color rendition)
+  - tags: optional list of such categorization tags as commonly induce special UI renditions other than squigglies, such as `'deprecated` (may induce strike-thru font-style rendition) or `'unused` / `'unnecessary` / `'unreachable` (may induce faded text-color rendition)
 
 Of note, the list-of-notices for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-notices if changed at all (and ideally, only then) &mdash; whether it's empty or not.
 

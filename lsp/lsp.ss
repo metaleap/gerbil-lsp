@@ -66,7 +66,7 @@
             (when handler
               (try
                 (handler (hash-get json-incoming "result"))
-                (catch (e)
+              (catch (e)
                   (errorf "=== response handler ~a FAILED on response '~a' with: ~a"
                             msg-id (json-object->string json-incoming) e))))))))
 

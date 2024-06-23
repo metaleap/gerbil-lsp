@@ -28,11 +28,21 @@
 
 
 ;; used by `./msgs/*.ss` modules to enqueue LSP requests to the client
-(def (lsp-req! method params on-resp)
+(def (lsp-request! method params on-resp)
   (def req-id (symbol->string (gensym)))
-  (hash-put! +lsp-new-outgoing-reqs+ req-id (cons (json-rpc-request
+  (hash-put! +lsp-new-outgoing-reqs+  req-id
+                                      (cons (json-rpc-request
+                                              jsonrpc: json-rpc-version
+                                              method: method
+                                              params: params
+                                              id: req-id)
+                                            on-resp)))
+
+
+;; used by `./msgs/*.ss` modules to enqueue LSP requests to the client
+(def (lsp-notify! method params)
+  (hash-put! +lsp-new-outgoing-reqs+ #f (cons (json-rpc-request
                                                     jsonrpc: json-rpc-version
                                                     method: method
-                                                    params: params
-                                                    id: req-id)
-                                                  on-resp)))
+                                                    params: params)
+                                                  #f)))

@@ -10,18 +10,15 @@
         ./workspace-sync)
 
 
-(def source-file-path ())
-
-
-(def (file-path->lsp-uri file-path)
-  (string-append "file://" file-path))
+(def (lsp-file->file-path (file : TextDocumentIdentifier))
+  (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
 
 
 (lsp-handler "textDocument/documentSymbol"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-in-file
     (using (params (make-DocumentSymbolParams params) :- DocumentSymbolParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (let (sub (make-DocumentSymbol  name: "SubSymbol"
                                         detail: "a single child symbol"
                                         kind: symbolkind-class
@@ -60,7 +57,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#lookup
     (using (params (make-DefinitionParams params) :- DefinitionParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
       [ (make-Location uri: source-file-path
                       range: (make-Range  (make-Position 0 1)
                                           (make-Position 0 4)))
@@ -73,7 +70,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#lookup
     (using (params (make-ReferenceParams params) :- ReferenceParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         [ (make-Location uri: source-file-path
                         range: (make-Range  (make-Position 0 1)
                                             (make-Position 0 4)))
@@ -86,7 +83,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#occurrences
     (using (params (make-DocumentHighlightParams params) :- DocumentHighlightParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         [ (make-DocumentHighlight range: (make-Range  (make-Position 0 1)
                                                       (make-Position 0 4))
                                   kind: documenthighlightkind-text)
@@ -101,7 +98,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#completions
     (using (params (make-CompletionParams params) :- CompletionParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                                 source-file-path
                                 (Position-line params.position)
@@ -119,7 +116,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#info-items
     (using (params (make-HoverParams params) :- HoverParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                                   source-file-path
                                   (Position-line params.position)
@@ -135,7 +132,7 @@
     ; TODO: produce real results obtained from ../notes.md#can-rename
     (using (params (make-PrepareRenameParams params) :- PrepareRenameParams)
       (debugf "PR02")
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (debugf "PR03")
         (let (ret (make-Range params.position
                               (make-Position  (Position-line params.position)
@@ -148,7 +145,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#rename
     (using (params (make-RenameParams params) :- RenameParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (make-WorkspaceEdit
           changes: (hash (,(file-path->lsp-uri source-file-path) [
             (make-TextEdit  newText: params.newName
@@ -162,7 +159,7 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#signatures
     (using (params (make-SignatureHelpParams params) :- SignatureHelpParams)
-      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+      (let (source-file-path (lsp-file->file-path params.textDocument))
         (make-SignatureHelp
           signatures: (if (fx>0? (Position-line params.position)) [] [(make-SignatureInformation
             label:  "(foo bar baz)"
