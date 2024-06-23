@@ -45,13 +45,12 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 Lists of this single simple structure are returned by [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
-A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location.
-
+A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location. Per-item struct fields:
 - **name** — well-known name (`ide` can define these as quoted-symbol enumerants) of the `InfoItem`, see list of ideas below
 - **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'bool`, `'symbol`
 - **value** — the actual info-bite as a string, bool or symbol
 
-`InfoItem` ideas, listed by their (suggested) `'name`s:
+`InfoItem` ideas, listed by their (suggested) `name`s:
 - Always included, no matter what's at the location:
   - `'kind`, format `'symbol`: some kind of basic categorization of the AST node (eg. `'call`, `'function`, `'macro`, `'var`, `'struct`, `'class`, `'iface`, `'lit-fixnum`, `'lit-string`, `'lit-symbol`, `lit-list`, `lit-vector`, `'lit-bool`, etc &mdash; whatever prim-kinds are used internally `ide`-side / parser-side / interpreter-side)
     - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
