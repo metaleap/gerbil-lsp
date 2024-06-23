@@ -149,7 +149,7 @@
     (using (params (make-RenameParams params) :- RenameParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
         (make-WorkspaceEdit
-          changes: (hash ((file-path->lsp-uri source-file-path) [
+          changes: (hash (,(file-path->lsp-uri source-file-path) [
             (make-TextEdit  newText: params.newName
                             range: (make-Range  params.position
                                                 (make-Position  (Position-line params.position)
