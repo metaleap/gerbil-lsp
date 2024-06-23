@@ -196,7 +196,7 @@ Results:
   - prefix matches first, substring matches afterwards (they matter, too, as auto-complete is often a search attempt)
 
 **On "dot completions":** imho, since this sugar is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
-- all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
+- all the valid "dot completions" (field or method names, ie right-hand-side operands) are already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`, same for methods), ie. "there _is_ no 'dot-completion' (special handling of dots)"
 - the [`InfoItem`](#defstruct-infoitem-name-format-value)s for such completions then are of course simply those of the field or method
 
