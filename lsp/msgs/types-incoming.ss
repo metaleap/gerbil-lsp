@@ -352,3 +352,16 @@
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj)
     (set! this.newName (hash-get json-obj "newName")))))
+
+
+
+(defclass (SignatureHelpParams TextDocumentPositionParams)
+  ( )
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! SignatureHelpParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))

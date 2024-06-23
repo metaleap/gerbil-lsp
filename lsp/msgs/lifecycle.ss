@@ -68,9 +68,9 @@
                                     #t)
                                   ("renameProvider"
                                     (hash ("prepareProvider" #t)))
-
                                   ("signatureHelpProvider"
-                                    #f) ; when changing, it's an object not #t!
+                                    (hash ("triggerCharacters" " ")))
+
                                   ("declarationProvider"
                                     #f)
                                   ("typeDefinitionProvider"

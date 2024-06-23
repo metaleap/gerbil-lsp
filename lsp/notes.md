@@ -274,7 +274,7 @@ Args:
 Results:
 - a list of [`InfoItem`](#defstruct-infoitem-name-format-value)s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
 
-**Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call syntax sentinel chars" like `(`, `,`, `)`.)
+**Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call-syntax-signaling sentinel chars" like `(` and `,`.)
 
 # 3. Language intel: bonus / icing on the cake
 

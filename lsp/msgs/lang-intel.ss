@@ -21,25 +21,26 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-in-file
     (using (params (make-DocumentSymbolParams params) :- DocumentSymbolParams)
-      (let (sub (make-DocumentSymbol  name: "SubSymbol"
-                                      detail: "a single child symbol"
-                                      kind: symbolkind-class
-                                      tags: []
-                                      range: (make-Range  (make-Position 2 1)
-                                                          (make-Position 2 8))
-                                      selectionRange: (make-Range (make-Position 2 2)
-                                                                  (make-Position 2 6))
-                                      children: []))
-      [(make-DocumentSymbol name: "Gerbil"
-                            detail: (format "**TODO:** call `ide/defs-in-file` with `~a`"
-                                              (TextDocumentIdentifier-uri params.textDocument))
-                            kind: symbolkind-class
-                            tags: []
-                            range: (make-Range  (make-Position 0 1)
-                                                (make-Position 2 8))
-                            selectionRange: (make-Range (make-Position 0 2)
-                                                        (make-Position 2 6))
-                            children: [sub])]))))
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        (let (sub (make-DocumentSymbol  name: "SubSymbol"
+                                        detail: "a single child symbol"
+                                        kind: symbolkind-class
+                                        tags: []
+                                        range: (make-Range  (make-Position 2 1)
+                                                            (make-Position 2 8))
+                                        selectionRange: (make-Range (make-Position 2 2)
+                                                                    (make-Position 2 6))
+                                        children: []))
+          [(make-DocumentSymbol name: "Gerbil"
+                                detail: (format "**TODO:** call `ide/defs-in-file` with `~a`"
+                                                source-file-path)
+                                kind: symbolkind-class
+                                tags: []
+                                range: (make-Range  (make-Position 0 1)
+                                                    (make-Position 2 8))
+                                selectionRange: (make-Range (make-Position 0 2)
+                                                            (make-Position 2 6))
+                                children: [sub])])))))
 
 
 (lsp-handler "workspace/symbol"
@@ -155,3 +156,16 @@
                                                 (make-Position  (Position-line params.position)
                                                                 (+ 4 (Position-character params.position)))))
           ])))))))
+
+
+(lsp-handler "textDocument/signatureHelp"
+  (lambda (params)
+    ; TODO: produce real results obtained from ../notes.md#signatures
+    (using (params (make-SignatureHelpParams params) :- SignatureHelpParams)
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        (make-SignatureHelp
+          signatures: [(make-SignatureInformation
+            label:  "(foo bar baz)"
+            documentation: (make-MarkupContent
+              kind: markupkind-markdown
+              value: (format "**TODO:** call `ide/signatures` with ~a" source-file-path)))])))))

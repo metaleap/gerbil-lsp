@@ -121,11 +121,11 @@
 
 (defclass (CompletionItem JSON)
   ( label
-    (labelDetails : CompletionItemLabelDetails)
+    labelDetails ; null or CompletionItemLabelDetails
     kind
     tags
     detail
-    documentation
+    documentation ; null or MarkupContent
     )
   final: #t)
 
@@ -157,11 +157,23 @@
 
 
 (defclass (WorkspaceEdit JSON)
-  ( changes)
+  ( changes) ; hashmap{ filepath: []TextEdit }
   final: #t)
 
 
 (defclass (TextEdit JSON)
   ( (range : Range)
     newText)
+  final: #t)
+
+
+(defclass (SignatureHelp JSON)
+  ( signatures) ; []SignatureInformation
+  final: #t)
+
+
+(defclass (SignatureInformation JSON)
+  ( label
+    documentation ; null or MarkupContent
+    )
   final: #t)
