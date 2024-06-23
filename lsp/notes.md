@@ -22,7 +22,7 @@ Necessary:
   - _removed_ &mdash; source file deletions, or source file removals from the editor-side "workspace" / project
   - _added_ &mdash; source file creations (they're not necessarily empty), or source file additions to the editor-side "workspace" / project
   - _changed_ &mdash; on-disk source file modifications, whether through Save or from outside the editor
-- **on-source-file-edited**: this is not-yet-saved live edits — the source file path and full current editor-side buffer contents will be passed
+- **on-source-file-edited**: this is not-yet-saved live edits &mdash; the source file path and full current editor-side buffer contents will be passed
 
 Optional, **if** it is of any practical interest to `ide` (for example to "prioritize" analyses / refreshes of opened files vs. all the others or some such)
 
@@ -38,17 +38,17 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 **These features are "sorted in presumed order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
-  - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side — dunno) requires taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
-  - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, we need to align on this — or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
+  - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side &mdash; dunno) requires taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
+  - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, **we need to align on this** &mdash; or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
 
 ## _`defstruct InfoItem (name format value)`_
 
 This one pays off big time! Lists of this single simple structure are returned by (and thus computed for) [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
 A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location. Per-item struct fields:
-- **name** — well-known name of the `InfoItem` (`ide` can define these as quoted-symbol enumerants), see list of ideas below
-- **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'symbol`, `'none`
-- **value** — the actual info as a string or quoted-symbol
+- **name** &mdash; well-known name of the `InfoItem` (`ide` can define these as quoted-symbol enumerants), see list of ideas below
+- **format** &mdash; one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'symbol`, `'none`
+- **value** &mdash; the actual info as a string or quoted-symbol
 
 `InfoItem` ideas, listed by their (suggested) `name`s:
 - Always included, no matter what's at the location:
@@ -64,7 +64,7 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
     - want to produce here the clean(ed) syntactical form clarifying the signature as it would look in a call, ie. `(name arg arg)` or `(name arg . rest)` etc: ie. this should not be a direct textual source extract of the func/macro def's initial (non-body) part (which might include commented-forms or comments, might be multi-line etc) but instead pieced together readably a-fresh from the relevant AST
   - `'type`, format `'scheme`: if known (annotated or inferred) for that def or ref
   - `'expansion`, format `'scheme`: if identifier is a macro ref, and inside a macro call
-    - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
+    - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call &mdash; not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
   - `'import`, format `'plaintext` or `'scheme`: **whenever** identifier defined outside the current source file
   - `'unused`, format `'none`, content empty: only include if tracked / known and indeed the case for that ident
   - `'deprecated`, format `'none`, content empty: only include if tracked / known and indeed the case for that ident
@@ -94,9 +94,9 @@ Results:
 Gathering not just funcs and vars and macro defs, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` (fields and methods then being descendants) etc.
 
 Mandatory fields per list item:
-  - **infos** — list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
+  - **infos** &mdash; list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
     - desirable in addition to `'name`, as feasible / applicable / available: `'kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`.
-  - **children** — to make the hierarchy tree happen (if wanted by the caller), list of zero or more direct-descendant symbol defs, ie. locals (each of the same struct type as this item)
+  - **children** &mdash; to make the hierarchy tree happen (if wanted by the caller), list of zero or more direct-descendant symbol defs, ie. locals (each of the same struct type as this item)
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
@@ -104,7 +104,7 @@ Mandatory fields per list item:
 
 - Most desirable, perhaps indispensible, in Scheme land: "expansion" (to symbol-defs to yield here) of custom `defrule`s or custom macros starting with the `def`-prefix, for example: although [this defrule named 'defhandler'](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/handling.ss#L24) would be listed as a symbol of `handling.ss`, its _callers_ such as eg. [`(defhandler "initialize")`](https://github.com/metaleap/gerbil-lsp/blob/7443360986656e82ff2b3674a19afcd7680bee60/lsp/lsp-lifecycle.ss#L25) in other (or not) source files would then be listed as defs in _those_ source files
 - More generalized, many macros are designed to introduce caller-specified identifiers into their bodies' scopes that need to be captured in the tree hierarchy, ie. whether `let`s reduce to `lambda`s or not, even some `my-custom-let` doing so introduces a _macro-caller-specified_ identifier to its body and so it should show up in the returned symbol hierarchy.
-- At the same time, _some_ macros follow a fashion of also introducing into their bodies scopes their own well-known (not caller-specified) magic identifiers (`it` as a commonly-known example) &mdash; while we **would** want those to be listed in [completions](#completions), we would **not** want them in `defs-in-file` (or `defs-search`).
+- At the same time, _some_ macros follow a fashion of also introducing into their caller-supplied bodies' scopes their own well-known (not caller-specified) magic identifiers (`it` as a commonly-known example) &mdash; while we **would** want those to be listed in [completions](#completions), we would **not** want them in `defs-in-file` (or `defs-search`).
 
 ## _`defs-search`_
 
@@ -128,7 +128,8 @@ Args:
 - a "lookup kind": one of `ide`-defined known-enumerants:
   - at least:
     - `'def` (go to definition)
-      - whether `def` or `let` or `using` or `my-similar-to-those-macro` introducing the identifier at position, whether in current file or cross-file import or package dep import or `std/*` / `gerbil/*` import etc &mdash; gotta find and yield the location  =)
+      - whether a `define` or `let` or `using` or `my-macro-similar-to-those` introduced the identifier at position, whether in current file or cross-file import or package dep import or `std/*` / `gerbil/*` import etc &mdash; gotta find and yield the location  =)
+      - the above-listed [macro-mediated symbol considerations](#macro-related-subleties) apply here, too
     - `'refs` (list references)
       - whether we're positioned right _on_ an identifier decl (def / let / using / other), or merely on a ref _to_ one
   - optionally, if exciting-and-feasible:
@@ -255,10 +256,10 @@ The callback func passed in by the caller would receive:
   - the _range_ in the source file that the notice applies to
   - an `ide`-defined severity/category enumeration such as eg. `'err`, `'warn`, `'hint`, `'info` (as applicable)
   - the (error / warning / info / etc) message itself
-  - error / warning / etc code (number or ident) — if there's such a thing in Gerbil
+  - error / warning / etc code (number or ident) &mdash; if there's such a thing in Gerbil
   - tags: optional list of such categorization tags as commonly induce special UI renditions other than squigglies, such as `'deprecated` (may induce strike-thru font-style rendition) or `'unused` / `'unnecessary` / `'unreachable` (may induce faded text-color rendition)
 
-Of note, the list-of-notices for a file may be empty upon its re-analysis when previously it wasn't — or vice versa — either way, any re-analysis should invoke the callback with the now-current list-of-notices if changed at all (and ideally, only then) &mdash; whether it's empty or not.
+Of note, the list-of-notices for a file may be empty upon its re-analysis when previously it wasn't &mdash; or vice versa &mdash; either way, any re-analysis should invoke the callback with the now-current list-of-notices if changed at all (and ideally, only then) &mdash; whether it's empty or not.
 
 **A challenging necessity:** any change in any one source file can always potentially affect its direct importers (_and_ importers of _those_ too) &mdash; so all such direct or indirect dependent source files should hence also be re-analyzed and have their own list-of-notices re-announced (if changed) over the callback arg.
 
@@ -273,7 +274,7 @@ Args:
 Results:
 - a list of [`InfoItem`](#defstruct-infoitem-name-format-value)s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
 
-**Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call-syntax-signaling sentinel chars" like `(` and `,`.)
+**Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are &mdash; because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call-syntax-signaling sentinel chars" like `(` and `,`.)
 
 # 3. Language intel: bonus / icing on the cake
 
