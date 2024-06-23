@@ -164,8 +164,8 @@
     (using (params (make-SignatureHelpParams params) :- SignatureHelpParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
         (make-SignatureHelp
-          signatures: [(make-SignatureInformation
+          signatures: (if (fx>0? (Position-line params.position)) [] [(make-SignatureInformation
             label:  "(foo bar baz)"
             documentation: (make-MarkupContent
               kind: markupkind-markdown
-              value: (format "**TODO:** call `ide/signatures` with ~a" source-file-path)))])))))
+              value: (format "**TODO:** call `ide/signatures` with ~a" source-file-path)))]))))))
