@@ -45,39 +45,40 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 This single simple structure satisfies the return requirements of [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
-A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) gather the various kinds of contextual information that `ide` knows about that location.
+A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) gathers the various kinds of contextual information that `ide` knows about that location.
 
-- **name** — one of `ide`-defined well-known enumerants such as eg. `description`, `signature`, `type`, `name`, etc.
-- **format** — one of `ide`-defined well-known enumerants such as eg. `plaintext`, `markdown`, `scheme`, `bool`, `symbol`
+- **name** — well-known name (`ide` can define these as quoted-symbol enumerants) of the `InfoItem`, see list of ideas below
+- **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'bool`, `'symbol`
 - **value** — the actual info-bite as a string, bool or symbol
 
-`InfoItem` ideas for _locations_:
-- `kind`, format `plaintext`: some kind of basic categorization of the AST node (eg. `call`, for identifiers: [`function` | `macro` | `var` | `'struct`, `'class`, `'iface`, others?], `lit-fixnum`, `lit-string`, `lit-symbol`, `lit-list`, `lit-vector`, etc &mdash; whatever prim-kinds are used internally `ide`-side / parser-side / interpreter-side)
-  - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
+`InfoItem` ideas, listed by their (suggested) `'name`s:
+- Always included, no matter what's at the location:
+  - `'kind`, format `'symbol`: some kind of basic categorization of the AST node (eg. `'call`, `'function`, `'macro`, `'var`, `'struct`, `'class`, `'iface`, `'lit-fixnum`, `'lit-string`, `'lit-symbol`, `lit-list`, `lit-vector`, `'lit-bool`, etc &mdash; whatever prim-kinds are used internally `ide`-side / parser-side / interpreter-side)
+    - some of [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#symbolKind) or [these](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind) might be adopted here where it makes sense (that's `ide`'s call though)
 - If on an identifier, whether ref or def:
-  - `name`, format `plaintext`: the identifier itself (since the caller doesn't know it, having given only a _location_)
-  - `description` (format `markdown`), if one of these available:
+  - `'name`, format `'plaintext`: the identifier itself (since the caller doesn't know it, having given only a _location_)
+  - `'description` (format `'markdown`), if one of these available:
     - existing markdown doc or
     - for non-documented top-level defs their preceding multi-line comment or block of single-line comments, if any (stripped of comment delimiters)
-  - `signature`, format `scheme`: if known callable (func or macro)
+  - `'signature`, format `'scheme`: if known callable (func or macro)
     - multiple such items if multiple signatures known (eg. `case-lambda` or equivalents)
     - the clean(ed) syntactical form clarifying the signature as it would look in a call, ie. `(name arg arg)` or `(name arg . rest)` etc: ie. this should not be a direct textual source extract of the func/macro def's initial (non-body) part (which might include commented-forms, might be multi-line etc) but instead pieced together readably a-fresh from the relevant AST
-  - `type`, format `scheme`: if known (annotated or inferred) for that def or ref
-  - `expansion`, format `scheme`: if identifier is a macro ref, and inside a macro call
+  - `'type`, format `'scheme`: if known (annotated or inferred) for that def or ref
+  - `'expansion`, format `'scheme`: if identifier is a macro ref, and inside a macro call
     - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
-  - `import`, format `plaintext` or `scheme`: **whenever** identifier defined outside the current source file
-  - `deprecated`, format `bool` (only if there's a "defacto standard" notation for that in Gerbil, and if `true`)
-  - `unused`, format `bool` (if tracked / known)
+  - `'import`, format `'plaintext` or `'scheme`: **whenever** identifier defined outside the current source file
+  - `'deprecated`, format `'bool` (only if there's a "defacto standard" notation for that in Gerbil, and if `true`)
+  - `'unused`, format `'bool` (if tracked / known)
   - any other meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX
     - but excluding stuff obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
     - also excluding contextual "hints and tips" or code warnings / lints: covered by [diagnostics](#on-file-notices-changed)
 - If on a string literal
-  - `byte-length` (format: `plaintext`)
-  - `utf8-rune-length` (format: `plaintext`)
+  - `'str-byte-length` (format: `'plaintext`)
+  - `'str-utf8-rune-length` (format: `'plaintext`)
 - If on a fixnum or char literal
-  - `hex` (format: `scheme`)
-  - `octal` (format: `scheme`)
-  - `decimal` (format: `scheme`)
+  - `'fx-hex` (format: `'scheme`)
+  - `'fx-octal` (format: `'scheme`)
+  - `'fx-decimal` (format: `'scheme`)
 
 Any other ideas? Just bring them into `ide` and let `lsp` and other known `ide` users know about and adopt them if and as fits their needs.
 
@@ -96,13 +97,13 @@ Results:
 Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` etc.
 
 Mandatory fields per list item:
-  - **infos** — list of `InfoItem`s (mandatory: at least the `name` one)
+  - **infos** — list of `InfoItem`s (mandatory: at least the `'name` one)
   - **children** — to make the hierarchy tree happen, list of zero or more direct-descendant symbol defs, ie. locals (each same 2-field struct as this)
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
-**Desirable `InfoItem`s** in addition to `name`, as feasible / applicable / available:
-- `kind`, `deprecated`, `unused`, `signature`, `type`, `description`.
+**Desirable `InfoItem`s** in addition to `'name`, as feasible / applicable / available:
+- `'kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`.
 
 ### Macro-related subleties:
 
@@ -180,8 +181,8 @@ Results:
   - `children`: not populated (or even computed)
   - `infos`:
     - the `name` item is, as usual, the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
-    - **Desirable `InfoItem`s** in addition to `name`, as feasible / applicable / available:
-      - `import`, `kind`, `deprecated`, `unused`, `signature`, `type`, `description`
+    - **Desirable `InfoItem`s** in addition to `'name`, as feasible / applicable / available:
+      - `'import`, `kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`
 
 **Only list what's in scope at position:**
 - any top-level def/decl in the current file
@@ -276,7 +277,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above, as usual)
 
 Results:
-- a list of `InfoItem`s that includes one `name` item, one or more `signature` items, plus if available a `description` item.
+- a list of `InfoItem`s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
 
 **Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call syntax sentinel chars" like `(`, `,`, `)`.)
 
