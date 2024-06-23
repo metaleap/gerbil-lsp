@@ -97,12 +97,12 @@ Results:
 Not just funcs and vars, but practically also all macro calls starting with `def` such as `defstruct`, `defclass`, `interface` etc.
 
 Mandatory fields per list item:
-  - **infos** — list of `InfoItem`s (mandatory: at least the `'name` one)
+  - **infos** — list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
   - **children** — to make the hierarchy tree happen, list of zero or more direct-descendant symbol defs, ie. locals (each same 2-field struct as this)
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
-**Desirable `InfoItem`s** in addition to `'name`, as feasible / applicable / available:
+**Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available:
 - `'kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`.
 
 ### Macro-related subleties:
@@ -181,7 +181,7 @@ Results:
   - `children`: not populated (or even computed)
   - `infos`:
     - the `name` item is, as usual, the full name, not partial (ie if position is right after `ha` then `name` is the _full_ `hash-ref`, `hash-copy` etc and _not_ `sh-ref`, `sh-copy` etc)
-    - **Desirable `InfoItem`s** in addition to `'name`, as feasible / applicable / available:
+    - **Desirable [`InfoItem`](#defstruct-infoitem-name-format-value)s** in addition to `'name`, as feasible / applicable / available:
       - `'import`, `kind`, `'deprecated`, `'unused`, `'signature`, `'type`, `'description`
 
 **Only list what's in scope at position:**
@@ -201,7 +201,7 @@ Results:
 **On "dot completions":** imho, since this sugar is pertinent only in certain scopes such as `using` or `{...}` and only one level deep AFAICT:
 - all the valid "dot completions" (field or method names, ie right-hand-side operands) should be already "statically" known for any given left-hand-side operand
 - hence these can be prepared as simple _full_-identifiers (ie. `mystruct.myfield` is proposed as its own full completion-item entry right next to `mystruct`, same for methods), ie. "there _is_ no 'dot-completion' (special handling of dots)"
-- the `InfoItem`s for such completions then are of course simply those of the field or method
+- the [`InfoItem`](#defstruct-infoitem-name-format-value)s for such completions then are of course simply those of the field or method
 
 ## _`info-items`_
 
@@ -212,7 +212,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 
 Results:
-- the full list of known / available `InfoItem`s for the given location
+- the full list of known / available [`InfoItem`](#defstruct-infoitem-name-format-value)s for the given location
 
 
 ## _`can-rename`_
@@ -277,7 +277,7 @@ Args:
 - the current _position_ (see note at intro of part 2. above, as usual)
 
 Results:
-- a list of `InfoItem`s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
+- a list of [`InfoItem`](#defstruct-infoitem-name-format-value)s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
 
 **Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are — because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call syntax sentinel chars" like `(`, `,`, `)`.)
 
