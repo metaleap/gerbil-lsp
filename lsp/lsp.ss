@@ -52,24 +52,31 @@
     (set! json-outgoing #f)
     (set! json-incoming (read-msg! transport))
     (let ((msg-id (hash-get json-incoming "id"))
-          (msg-method (hash-get json-incoming "method")))
+          (msg-method (hash-get json-incoming "method"))
+          (msg-err-code (hash-get json-incoming "code")))
       (if (json-rpc-error? json-incoming)
-        ; received an error message
+        ; then: received a broken, not-JSON-parseable message
         (using (err json-incoming :- JSON-RPCError)
           (set! json-outgoing err #;(trivial-class->json-object err)))
-        ; else, received a normal message
-        (if msg-method
-          ; msg is an incoming request or notification
-          (set! json-outgoing (serve-json-rpc lsp-handle json-incoming))
-          ; else, msg is an incoming response
-          (let (handler (hash-get +pending-reqs+ msg-id))
-            (hash-remove! +pending-reqs+ msg-id) ; even if handler==#f, because void-returning reqs use that
-            (when handler
-              (try
-                (handler (hash-get json-incoming "result"))
-              (catch (e)
-                  (errorf "=== response handler ~a FAILED on response '~a' with: ~a"
-                            msg-id (json-object->string json-incoming) e))))))))
+        ; else: received a proper JSON message
+          (if msg-err-code
+            ; then: received an error response
+            (begin
+              (hash-remove! +pending-reqs+ msg-id)
+              (errorf "=== LSP client sent ERROR response: ~a" (json-object->string json-incoming)))
+            ; else: a normal LSP message
+            (if msg-method
+              ; then: msg is an incoming request or notification
+              (set! json-outgoing (serve-json-rpc lsp-handle json-incoming))
+              ; else, msg is an incoming response
+              (let (handler (hash-get +pending-reqs+ msg-id))
+                (hash-remove! +pending-reqs+ msg-id) ; even if handler==#f, because void-returning reqs use that
+                (when handler
+                  (try
+                    (handler (hash-get json-incoming "result"))
+                  (catch (e)
+                      (errorf "=== response handler ~a FAILED on response '~a' with: ~a"
+                                msg-id (json-object->string json-incoming) e)))))))))
 
     (thread-yield!) ; somehow flushes logger prints I'm told
     (try ; if any writes throw, we are irreparably disconnected

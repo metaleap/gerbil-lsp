@@ -70,7 +70,7 @@
                                   ("renameProvider"
                                     (hash ("prepareProvider" #t)))
                                   ("signatureHelpProvider"
-                                    (hash ("triggerCharacters" " ")))
+                                    (hash ("triggerCharacters" [" " "\t"])))
 
                                   ("declarationProvider"
                                     #f)
