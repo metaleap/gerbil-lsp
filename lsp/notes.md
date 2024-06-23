@@ -46,9 +46,9 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 Lists of this single simple structure are returned by [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
 A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) reflects the various kinds of contextual information that `ide` knows about that location. Per-item struct fields:
-- **name** — well-known name (`ide` can define these as quoted-symbol enumerants) of the `InfoItem`, see list of ideas below
+- **name** — well-known name of the `InfoItem` (`ide` can define these as quoted-symbol enumerants), see list of ideas below
 - **format** — one of `ide`-defined enumerants such as eg. `'plaintext`, `'markdown`, `'scheme`, `'bool`, `'symbol`
-- **value** — the actual info-bite as a string, bool or symbol
+- **value** — the actual info as a string, bool or symbol
 
 `InfoItem` ideas, listed by their (suggested) `name`s:
 - Always included, no matter what's at the location:
@@ -68,9 +68,6 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
   - `'import`, format `'plaintext` or `'scheme`: **whenever** identifier defined outside the current source file
   - `'deprecated`, format `'bool` (only if there's a "defacto standard" notation for that in Gerbil, and if `true`)
   - `'unused`, format `'bool` (if tracked / known)
-  - any other meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX
-    - but excluding stuff obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
-    - also excluding contextual "hints and tips" or code warnings / lints: covered by [diagnostics](#on-file-notices-changed)
 - If on a string literal
   - `'str-byte-length` (format: `'plaintext`)
   - `'str-utf8-rune-length` (format: `'plaintext`)
@@ -79,8 +76,9 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
   - `'fx-octal` (format: `'scheme`)
   - `'fx-decimal` (format: `'scheme`)
 
-Any other ideas? Just bring them into `ide` and let `lsp` and other known `ide` users know about and adopt them if and as fits their needs.
-
+Any other ideas for meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX? Just bring them into `ide` and let `lsp` and other `ide` users know about and adopt them if and as fits their needs.
+- but excluding what's readily obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
+- also excluding contextual "hints and tips" or code warnings / lints: it's by [diagnostics](#on-file-notices-changed)
 
 ## _`defs-in-file`_
 
