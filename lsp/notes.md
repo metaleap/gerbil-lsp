@@ -98,10 +98,12 @@ Args:
 - the current _position_ (see note at intro of part 2. above)
 - a "lookup kind": one of `ide`-defined known-enumerants:
   - at least:
-    - `'def` (go to definition) — be sure to catch locals or file-level defs shadowing imported ones
-    - `'refs` (list references) — whether we're _on_ a def, or on a ref _to_ some def
+    - `'def` (go to definition)
+      - whether `def` or `let` or `using` or `my-macro` introducing the identifier at position, whether in current file or cross-file import or package dep import or `std/*` / `gerbil/*` import etc &mdash; gotta find and yield the location  =)
+    - `'refs` (list references)
+      - whether we're positioned right _on_ an identifier decl (def / let / using / other), or merely on a ref _to_ one
   - optionally, if exciting-and-feasible:
-    - `'type-def` (location of the defstruct/defclass/iface of a type-annotated ident)
+    - `'type-def` (location of the defstruct/defclass/iface of a type-annotated / type-inferred ident)
     - `'iface-impl`
       - if on interface def-or-ref or interface method def-or-ref: known implicit implementations of that interface or method
       - if on class def-or-ref or class method def-or-ref: interfaces or interface methods implicitly implemented by that
@@ -125,7 +127,7 @@ Args:
 Results:
 - a list of zero or more location _ranges_ (ie. start-end-pair) in the current file
 
-Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref), internally (`ide`-side) this might perhaps be done as a specialized "list references" (see above, ie. `(lookup path pos 'refs)`) to look up refs _only_ in the current file but not the rest of the codebase.
+Usually used by editors to highlight all occurrences of the current ident (whether we're on a def or on a ref) &mdash; internally (`ide`-side) this might perhaps best be done as a specialized "list references" call (see [lookup](#lookup), ie. `(lookup path pos 'refs)`) to look up refs _only_ in the current file but not the rest of the codebase.
 
 (Other non-Lispy language servers use it also for such situations as highlighting the func or loop of the current `break` / `continue` / `return` but that does not seem applicable to Scheme.)
 
@@ -179,6 +181,7 @@ Results:
   - if a symbol: the `description` as described above in `completions`
   - if a symbol: the `detail` as described above in `defs-in-file` / `defs-search` / `completions`
   - if a macro ref: the expansion of that macro call as a markdown `` ```scheme `` syntax block
+    - that's reader-intuitive "immediately-next" expansion — not the "final full expansion" into IR or nothing-but-lambdas =)
   - if a string literal: the byte length and rune length (can be handy)
   - if a fixnum or char literal: the value in the base of decimal, octal, hex
   - any other infos / metadata already lying around for free
