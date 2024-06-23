@@ -6,7 +6,7 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **Language intel quick jumps:**
 - [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
-  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-tips](#info-tips), [can-rename](#can-rename), [rename](#rename), [on-file-notices-changed (diagnostics)](#on-file-notices-changed), [signatures](#signatures)
+  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-tips](#info-tips), [can-rename](#can-rename) and [rename](#rename), [on-file-notices-changed](#on-file-notices-changed) (diagnostics), [signatures](#signatures)
 - [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
   - [ast-parents](#ast-parents), [callers](#callers), [callees](#callees), [super-types], [sub-types]
 

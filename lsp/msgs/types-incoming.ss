@@ -290,3 +290,16 @@
 (defmethod {:init! DefinitionParams}
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (ReferenceParams TextDocumentPositionParams)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! ReferenceParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))

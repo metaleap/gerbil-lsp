@@ -58,6 +58,8 @@
                                     #t)
                                   ("definitionProvider"
                                     #t)
+                                  ("referencesProvider"
+                                    #f)
                                   ("hoverProvider"
                                     #t)
 
@@ -70,8 +72,6 @@
                                   ("typeDefinitionProvider"
                                     #f)
                                   ("implementationProvider"
-                                    #f)
-                                  ("referencesProvider"
                                     #f)
                                   ("documentHighlightProvider"
                                     #f)
