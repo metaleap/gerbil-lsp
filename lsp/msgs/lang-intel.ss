@@ -97,7 +97,7 @@
     ; TODO: produce real results obtained from ../notes.md#completions
     (using (params (make-CompletionParams params) :- CompletionParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
-        (let (content (format "**TODO:** call `ide/info-tips` with `~a` and L~a,C~a."
+        (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                                 source-file-path
                                 (Position-line params.position)
                                 (Position-character params.position)))
@@ -112,10 +112,10 @@
 
 (lsp-handler "textDocument/hover"
   (lambda (params)
-    ; TODO: produce real results obtained from ../notes.md#info-tips
+    ; TODO: produce real results obtained from ../notes.md#info-items
     (using (params (make-HoverParams params) :- HoverParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
-        (let (content (format "**TODO:** call `ide/info-tips` with `~a` and L~a,C~a."
+        (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                                   source-file-path
                                   (Position-line params.position)
                                   (Position-character params.position)))
