@@ -32,5 +32,5 @@
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_publishDiagnostics
 (def (lsp-notify-textDocument-publishDiagnostics! source-file-path diagnostics) ; diagnostics : []Diagnostic
   (lsp-notify! "textDocument/publishDiagnostics" (make-PublishDiagnosticsParams
-                                                uri: (file-path->lsp-uri source-file-path)
-                                                diagnostics: diagnostics)))
+                                                    uri: (file-path->lsp-uri source-file-path)
+                                                    diagnostics: diagnostics)))
