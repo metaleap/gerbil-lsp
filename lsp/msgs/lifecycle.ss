@@ -60,13 +60,13 @@
                                     #t)
                                   ("referencesProvider"
                                     #t)
-                                  ("hoverProvider"
-                                    #t)
                                   ("documentHighlightProvider"
                                     #t)
-
                                   ("completionProvider"
-                                    #f) ; when changing, it's an object not #t!
+                                    #t)
+                                  ("hoverProvider"
+                                    #t)
+
                                   ("signatureHelpProvider"
                                     #f) ; when changing, it's an object not #t!
                                   ("declarationProvider"

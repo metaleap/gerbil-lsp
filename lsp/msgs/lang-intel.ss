@@ -80,7 +80,7 @@
 (lsp-handler "textDocument/documentHighlight"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#occurrences
-    (using (params (make-ReferenceParams params) :- ReferenceParams)
+    (using (params (make-DocumentHighlightParams params) :- DocumentHighlightParams)
       (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
         [ (make-DocumentHighlight range: (make-Range  (make-Position 0 1)
                                                       (make-Position 0 4))
@@ -88,6 +88,16 @@
           (make-DocumentHighlight range: (make-Range  (make-Position 2 1)
                                                       (make-Position 2 4))
                                   kind: documenthighlightkind-text)]))))
+
+
+
+
+(lsp-handler "textDocument/completion"
+  (lambda (params)
+    ; TODO: produce real results obtained from ../notes.md#completions
+    (using (params (make-CompletionParams params) :- CompletionParams)
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        []))))
 
 
 (lsp-handler "textDocument/hover"

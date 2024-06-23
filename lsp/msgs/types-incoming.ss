@@ -312,3 +312,16 @@
 (defmethod {:init! DocumentHighlightParams}
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (CompletionParams TextDocumentPositionParams)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! CompletionParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))
