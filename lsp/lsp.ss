@@ -10,11 +10,12 @@
         :std/os/socket
         :std/text/json
         :std/net/json-rpc
+        (only-in :std/net/httpd/handler read-request-headers read-request-body)
         ./handling
+        ; below imports only to trigger their top-level `lsp-handler` calls
         ./msgs/lifecycle
         ./msgs/lang-intel
-        ./msgs/workspace-sync
-        (only-in :std/net/httpd/handler read-request-headers read-request-body))
+        ./msgs/workspace-sync)
 
 
 
