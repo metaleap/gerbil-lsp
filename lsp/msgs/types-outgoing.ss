@@ -101,3 +101,13 @@
     containerName
     (location : Location))
   final: #t)
+
+
+(defclass (DocumentHighlight JSON)
+  ( (range : Range)
+    kind)
+  final: #t)
+
+(def documenthighlightkind-text 1)
+(def documenthighlightkind-read 1)
+(def documenthighlightkind-write 1)

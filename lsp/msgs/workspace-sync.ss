@@ -9,7 +9,7 @@
         :std/misc/path
         :std/misc/string
         ../handling
-        ./types)
+        ./types-incoming)
 
 
 (def source-file-extensions [".ss"]) ; TODO: discuss & decide: add .scm or not?

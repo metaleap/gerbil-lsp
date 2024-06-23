@@ -3,9 +3,9 @@
 (import :std/sugar
         :std/logger
         ../handling
-        ./types
-        ./workspace-sync
+        ./types-incoming
         ./types-outgoing
+        ./workspace-sync
         ./all-outgoing-requests)
 
 (def +server-name+        "gxlsp")
@@ -62,6 +62,8 @@
                                     #t)
                                   ("hoverProvider"
                                     #t)
+                                  ("documentHighlightProvider"
+                                    #t)
 
                                   ("completionProvider"
                                     #f) ; when changing, it's an object not #t!
@@ -72,8 +74,6 @@
                                   ("typeDefinitionProvider"
                                     #f)
                                   ("implementationProvider"
-                                    #f)
-                                  ("documentHighlightProvider"
                                     #f)
                                   ("codeActionProvider"
                                     #f) ; when changing, it's an object not #t!

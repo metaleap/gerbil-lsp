@@ -12,7 +12,7 @@
         ./handling
         ./msgs/lifecycle
         ./msgs/lang-intel
-        ./msgs/workspace
+        ./msgs/workspace-sync
         (only-in :std/net/httpd/handler read-request-headers read-request-body))
 
 
@@ -79,8 +79,8 @@
       (hash-for-each (lambda (req-id req-and-handler)
           (hash-put! +pending-reqs+ req-id (cdr req-and-handler))
           (write-msg! transport (car req-and-handler))
-        ) +new-reqs+)
-      (hash-clear! +new-reqs+)
+        ) +lsp-new-outgoing-reqs+)
+      (hash-clear! +lsp-new-outgoing-reqs+)
       (catch (e)
         (errorf "=== connection lost, exiting: ~a" e)
         (set! done #t))

@@ -2,11 +2,7 @@
 
 (import :std/sugar
         :std/text/json
-        :std/misc/func
         ../handling)
-
-
-(def … compose1)
 
 
 
@@ -301,5 +297,18 @@
   final: #t)
 
 (defmethod {:init! ReferenceParams}
+  (lambda (this json-obj) (when json-obj
+    (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (DocumentHighlightParams TextDocumentPositionParams)
+  ()
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! DocumentHighlightParams}
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj))))

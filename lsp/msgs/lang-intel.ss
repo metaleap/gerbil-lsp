@@ -10,6 +10,9 @@
         ./workspace-sync)
 
 
+(def source-file-path ())
+
+
 (lsp-handler "textDocument/documentSymbol"
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-in-file
@@ -72,6 +75,19 @@
           (make-Location uri: source-file-path
                         range: (make-Range  (make-Position 2 1)
                                             (make-Position 2 4)))]))))
+
+
+(lsp-handler "textDocument/documentHighlight"
+  (lambda (params)
+    ; TODO: produce real results obtained from ../notes.md#occurrences
+    (using (params (make-ReferenceParams params) :- ReferenceParams)
+      (let (source-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri params.textDocument)))
+        [ (make-DocumentHighlight range: (make-Range  (make-Position 0 1)
+                                                      (make-Position 0 4))
+                                  kind: documenthighlightkind-text)
+          (make-DocumentHighlight range: (make-Range  (make-Position 2 1)
+                                                      (make-Position 2 4))
+                                  kind: documenthighlightkind-text)]))))
 
 
 (lsp-handler "textDocument/hover"
