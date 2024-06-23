@@ -67,18 +67,18 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
     - that expansion here is reader-intuitive "immediately-next" expansion of the whole macro call — not the likely-illegible "final full expansion" say into IR or nothing-but-lambdas =)
   - `'import`, format `'plaintext` or `'scheme`: **whenever** identifier defined outside the current source file
   - `'unused`, format `'none`, content empty: only include if tracked / known and indeed the case for that ident
-  - `'deprecated`, format `'none`, content empty: only include if (there's a "defacto standard" notation for that in Gerbil, and if) indeed the case for that ident
+  - `'deprecated`, format `'none`, content empty: only include if tracked / known and indeed the case for that ident
 - If on a string literal
   - `'str-byte-length` (format: `'plaintext`)
   - `'str-utf8-rune-length` (format: `'plaintext`)
 - If on a fixnum or char literal
-  - `'fx-hex` (format: `'scheme`)
-  - `'fx-octal` (format: `'scheme`)
-  - `'fx-decimal` (format: `'scheme`)
+  - `'num-hex` (format: `'scheme`)
+  - `'num-octal` (format: `'scheme`)
+  - `'num-decimal` (format: `'scheme`)
 
-Any other ideas for meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX? Just bring them into `ide` and let `lsp` and other `ide` users know about and adopt them if and as fits their needs.
-- but excluding what's readily obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
-- also excluding contextual "hints and tips" or code warnings / lints: it's by [diagnostics](#on-file-notices-changed)
+Any other ideas for meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX? Just bring them into `ide` and let `lsp` and other `ide` users know about them,
+- but excluding the relational / referential infos readily obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
+- also excluding contextual "hints and tips" or code warnings / lints: it's covered by [diagnostics](#on-file-notices-changed)
 
 ## _`defs-in-file`_
 
@@ -95,7 +95,7 @@ Gathering not just funcs and vars and macro defs, but practically also all macro
 
 Mandatory fields per list item:
   - **infos** — list of [`InfoItem`](#defstruct-infoitem-name-format-value)s (mandatory: at least the `'name` one)
-  - **children** — to make the hierarchy tree happen, list of zero or more direct-descendant symbol defs, ie. locals (each same 2-field struct as this)
+  - **children** — to make the hierarchy tree happen (if wanted by the caller), list of zero or more direct-descendant symbol defs, ie. locals (each of the same struct type as this item)
   - **range-full**: start and end position of the _whole form_ of the symbol def/decl, ie. from the opening `(` up-to-and-including the closing `)`
   - **range-name**: start and end position of the identifier only (ie the `foo` in `(def foo 123)`)
 
@@ -117,7 +117,7 @@ Args:
 
 Results:
 - a hashtable / alist where for each entry:
-  - the _key_ is the path of a tracked Gerbil source file existing _somewhere_ in the currently-opened "root folders" that the _value_ applies to
+  - the _key_ is the path of an editor-side (ie. `on-source-file-changes`-introduced) source file that the _value_ applies to
   - the _value_ is a flat list (no tree hierarchy) of all the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, just with `children` neither populated nor even computed) found in that source file
 
 ## _`lookup`_
@@ -227,7 +227,7 @@ Results:
 
 [Demo scenario](https://code.visualstudio.com/assets/docs/editor/refactoring/rename.png)
 
-Project-wide def rename across all `on-source-file-changes`-introduced tracked source files.
+Project-wide def rename across all `on-source-file-changes`-introduced (ie. editor-side) source files.
 
 Args:
 - the current source file path
