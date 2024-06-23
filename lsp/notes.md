@@ -43,7 +43,7 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 ## _`defstruct InfoItem (name format value)`_
 
-This single simple structure satisfies the return requirements of [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
+Lists of this single simple structure are returned by [defs-in-file](#defs-in-file), [defs-search](#defs-search), [completions](#completions), [info-items](#info-items) and  [signatures](#signatures). So let's put it in place first.
 
 A collection of `InfoItem`s on a given _location_ (that's a source file path and _position_) gathers the various kinds of contextual information that `ide` knows about that location.
 
