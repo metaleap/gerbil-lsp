@@ -203,7 +203,7 @@
 (def diagnosticseverity-error 1)
 (def diagnosticseverity-warning 2)
 (def diagnosticseverity-information 3)
-(def diagnosticseverity-hint 4)
+; (def diagnosticseverity-hint 4) ; exists in LSP but not showing up in VSCode => it doesn't exist
 
 (def diagnostictag-unnecessary 1)
 (def diagnostictag-deprecated 2)
