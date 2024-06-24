@@ -42,3 +42,11 @@
   (lsp-notify! "window/logMessage" (make-LogMessageParams
                                       message: message
                                       type: type)))
+
+
+
+; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessage
+(def (lsp-notify-window-showMessage! message type)
+  (lsp-notify! "window/showMessage" (make-LogMessageParams
+                                      message: message
+                                      type: type)))
