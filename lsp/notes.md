@@ -4,11 +4,8 @@ List of feature suggestions that'll be most-desirable for `std/ide` to expose (t
 
 **Paths:** all paths consumed or produced `lsp`-side are absolute.
 
-**Language intel quick jumps:**
-- [_Essentials_](#2-language-intel-the-essentials), in "presumed dev-dependency order":
-  - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-items](#info-items), [can-rename](#can-rename) and [rename](#rename), [on-file-notices-changed](#on-file-notices-changed) (diagnostics), [signatures](#signatures)
-- [_Bonus_](#3-language-intel-bonus--icing-on-the-cake):
-  - [ast-parents](#ast-parents), [callers](#callers), [callees](#callees), [super-types], [sub-types]
+**Quick jumps** &mdash; [language intel](#2-language-intel) in "presumed dev-dependency order":
+- [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-items](#info-items), [can-rename](#can-rename) and [rename](#rename), [on-file-notices-changed](#on-file-notices-changed) (diagnostics), [signatures](#signatures)
 
 # 1. "Workspace" / source-file tracking & sync
 
@@ -33,7 +30,7 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 **All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho) and hence "client-side", whether that's LSP-speaking text editors (they do that already) or any other `ide` consumers.
 
-# 2. Language intel: the essentials
+# 2. Language intel
 
 **These features are "sorted in presumed order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
@@ -138,7 +135,6 @@ Args:
       - if on interface def-or-ref or interface method def-or-ref: known implicit implementations of that interface or method
       - if on class def-or-ref or class method def-or-ref: interfaces or interface methods implicitly implemented by that
     - any others later on if & as they come to mind in the community
-      - but note, [callers](#callers) and [callees](#callees) are already in here and separate from `lookup`, as they return hierarchies rather than a flat list
 
 Results:
 - a list of zero more _locations_ (pairs of source file path and _range_)
@@ -275,59 +271,3 @@ Results:
 - a list of [`InfoItem`](#defstruct-infoitem-name-format-value)s that includes one `'name` item, one or more `'signature` items, plus if available a `'description` item.
 
 **Must return the empty list whenever** the form _at current position_ is not itself a call, even if the parent or any ancestor forms are &mdash; because in Lisp/Scheme, they all are. So that pressing eg. space-key deep inside some vector / list / pair literals hierarchy does not continually re-popup some signature tooltip of a way-outer call form. (This is especially crucial since LSP clients might continually ask for signatures on every keypress, given Scheme's / Lisp's lack of "identifier-following call-syntax-signaling sentinel chars" like `(` and `,`.)
-
-# 3. Language intel: bonus / icing on the cake
-
-## _`ast-parents`_
-
-[Demo scenario](https://code.visualstudio.com/assets/docs/editor/codebasics/expandselection.gif)
-
-Args:
-- the current source file path
-- a _position_ (see note at intro of part 2. above)
-
-Results:
-- a struct or pair with
-    1. a range
-    2. a parent (which is itself also such a range/parent struct-or-pair)
-
-  such that the first _range_ is the AST node of the symbol at position, and its "parent" field then contains the _range_ of its parent AST node as well as that one's parent pointer etc.
-
-To clarify by example:
-  - if the input position given is the `z` in the top-level form `(def foo (bar baz))`
-  - the result would be this hierarchy:
-
-      ```scheme
-      ((here-goes-range-of "baz") . ((here-goes-range-of "(bar baz)") . ((here-goes-range-of "(def foo (bar baz))") . #f)))
-      ```
-
-      or, in curly / JSONy terms:
-
-      ```js
-      {
-        "range": hereGoesRangeOf('baz'),
-        "parent": {
-          "range": hereGoesRangeOf('(bar baz)'),
-          "parent": {
-            "range": hereGoesRangeOf('(def foo (bar baz))'),
-            "parent": null
-          }
-        }
-      }
-      ```
-
-  - in other words:
-    - the AST node at position is `baz` and its ancestor AST nodes are `(bar baz)` and `(def foo (bar baz))`
-    - what is wanted is, starting with `baz` all the way to the top, for each the range and parent pointer
-
-## _`callers`_
-
-[Demo scenario](http://anon.to/?https://i.sstatic.net/AxfS2.gif)
-
-...todo
-
-## _`callees`_
-
-[Demo scenario](http://anon.to/?https://i.sstatic.net/HKU3h.png)
-
-...todo
