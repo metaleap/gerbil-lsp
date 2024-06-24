@@ -45,13 +45,14 @@
               ("capabilities" (hash
                                   ("workspace" (hash
                                     ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))))
+                                  ("positionEncoding"
+                                    "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
                                   ("textDocumentSync"
                                     (hash ("openClose" #t)
                                           ("change" 1)))
+                                  ; keep notebookDocumentSync entirely OUT (not _just_ null), or VSCode's official "LSP client" node lib bugs out. wtf...
                                   ; ("notebookDocumentSync"
-                                  ;   (hash ("notebook" "*.gerbilrepl")))
-                                  ("positionEncoding"
-                                    "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
+                                  ;   (void)) ; notebooks are mostly a client-side impl; eg. our VSC extension runs commands against this LSP for evals
 
                                   ("documentSymbolProvider"
                                     (hash ("label" "TODO_DocSym_Label")))
@@ -73,6 +74,8 @@
                                     (hash ("triggerCharacters" [" " "\t"])))
                                   ("diagnosticProvider"
                                     #f) ; keep false since we push diags and don't support pull diags
+                                  ("codeActionProvider"
+                                    #f)
 
                                   ("selectionRangeProvider"
                                     #f)
@@ -86,8 +89,6 @@
                                     #f)
                                   ("implementationProvider"
                                     #f)
-                                  ("codeActionProvider"
-                                    #f) ; when changing, it's an object not #t!
                                   ("codeLensProvider"
                                     #f) ; when changing, it's an object not #t!
                                   ("documentFormattingProvider"

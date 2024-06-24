@@ -207,3 +207,10 @@
 
 (def diagnostictag-unnecessary 1)
 (def diagnostictag-deprecated 2)
+
+
+(defclass (Command JSON)
+  ( title
+    command
+    arguments)
+  final: #t)

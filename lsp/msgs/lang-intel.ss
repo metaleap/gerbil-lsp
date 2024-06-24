@@ -170,3 +170,11 @@
             documentation: (make-MarkupContent
               kind: markupkind-markdown
               value: (format "**TODO:** call `ide/signatures` with ~a" source-file-path)))]))))))
+
+
+(lsp-handler "textDocument/codeAction"
+  (lambda (params)
+    ; TODO: send code-eval reqs to `ide`'s current-file interp session eventually
+    (using (params (make-CodeActionParams params) :- CodeActionParams)
+      (let (source-file-path (lsp-file->file-path params.textDocument))
+        []))))

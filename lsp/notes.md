@@ -35,8 +35,11 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 **These features are "sorted in presumed order of dev dependency"** such that work on later ones will most-likely _substantially_ benefit from / build upon / reuse / leverage work already done for earlier ones.
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
-  - Handling those (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side &mdash; dunno) requires taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
-  - The `lsp` side receives from (and sends to) its client (editor), [as per protocol mandate](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#positionEncodingKind), all positions / ranges in the "PositionEncodingKind" UTF-16. If translations between that and `ide` need doing, **we need to align on this** &mdash; or alternatively, `ide` could adopt this "utf-16 position encoding standard" itself and mandate it to all `ide` users, which means `lsp` can pass positions/ranges right through between the editor side and the `ide`-lib side. Something to discuss and decide!
+  - Handling those `ide`-side (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side &mdash; dunno) will likely require taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
+  - _Positions_ (and thus, _ranges_) are (as received from the LSP client) passed by and returned to `lsp` using a UTF-16 encoding assumption. Since `ide` keeps track of live buffer contents (its consumers such as `lsp` just _providing_ them) and source file contents:
+    - _positions_ and _ranges_ passed to `ide` are to be used with a [converted-to-UTF-16](https://cons.io/reference/std/text/utf16.html) version of the source file contents that `ide` has
+    - _positions_ and _ranges_ received from `ide` are expected to be based on a [converted-to-UTF-16](https://cons.io/reference/std/text/utf16.html) version of the source file contents that `ide` has
+    - if the above is unwanted as the default by `ide`, let's work out some parameterization / configurability options
 
 ## _`defstruct InfoItem (name format value)`_
 

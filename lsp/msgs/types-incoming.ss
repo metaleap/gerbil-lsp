@@ -370,3 +370,19 @@
 (defmethod {:init! SignatureHelpParams}
   (lambda (this json-obj) (when json-obj
     (TextDocumentPositionParams:::init! this json-obj))))
+
+
+
+(defclass (CodeActionParams JSON)
+  ( (textDocument : TextDocumentIdentifier)
+    (range : Range)
+    )
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! CodeActionParams}
+  (lambda (this json-obj) (when json-obj
+    (set! this.textDocument (make-TextDocumentIdentifier (hash-get json-obj "textDocument")))
+    (set! this.range (make-Range (hash-get json-obj "range"))))))
