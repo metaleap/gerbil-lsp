@@ -375,8 +375,7 @@
 
 (defclass (CodeActionParams JSON)
   ( (textDocument : TextDocumentIdentifier)
-    (range : Range)
-    )
+    (range : Range))
   constructor: :init!
   equal: #t
   print: #t
@@ -386,3 +385,18 @@
   (lambda (this json-obj) (when json-obj
     (set! this.textDocument (make-TextDocumentIdentifier (hash-get json-obj "textDocument")))
     (set! this.range (make-Range (hash-get json-obj "range"))))))
+
+
+
+(defclass (ExecuteCommandParams JSON)
+  ( command
+    arguments)
+  constructor: :init!
+  equal: #t
+  print: #t
+  final: #t)
+
+(defmethod {:init! ExecuteCommandParams}
+  (lambda (this json-obj) (when json-obj
+    (set! this.command (hash-get json-obj "command"))
+    (set! this.arguments (hash-get json-obj "arguments")))))

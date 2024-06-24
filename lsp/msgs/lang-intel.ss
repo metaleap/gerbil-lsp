@@ -174,7 +174,16 @@
 
 (lsp-handler "textDocument/codeAction"
   (lambda (params)
-    ; TODO: send code-eval reqs to `ide`'s current-file interp session eventually
     (using (params (make-CodeActionParams params) :- CodeActionParams)
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        []))))
+      (if (equal? (Range-start params.range) (Range-end params.range)) []
+        (let (source-file-path (lsp-file->file-path params.textDocument))
+          [(make-Command title: "Eval" command: "eval-in-file" arguments: [params])])))))
+
+
+(lsp-handler "workspace/executeCommand"
+  (lambda (params)
+    ; TODO: send code-eval reqs to `ide`'s current-file interp session eventually
+    (using (params (make-ExecuteCommandParams params) :- ExecuteCommandParams)
+      (case params.command
+        (("eval-in-file") 123)
+        (else 321)))))

@@ -73,9 +73,11 @@
                                   ("signatureHelpProvider"
                                     (hash ("triggerCharacters" [" " "\t"])))
                                   ("diagnosticProvider"
-                                    #f) ; keep false since we push diags and don't support pull diags
+                                    #f) ; keep false since we do "push diags" and don't support "pull diags"
                                   ("codeActionProvider"
-                                    #f)
+                                    #t)
+                                  ("executeCommandProvider"
+                                    (hash ("commands" ["eval-in-file"])))
 
                                   ("selectionRangeProvider"
                                     #f)
@@ -95,8 +97,6 @@
                                     #f)
                                   ("documentRangeFormattingProvider"
                                     #f)
-                                  ("executeCommandProvider"
-                                    (hash ("commands" [])))
                                   ("linkedEditingRangeProvider"
                                     #f)
 )))))))
