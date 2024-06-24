@@ -19,10 +19,6 @@
 (def err-msg-fmt-fs "=== ignoring FS err while scrutinizing path ~a: ~a")
 
 
-(def (lsp-uri->file-path uri)
-  (substring uri (string-length "file://") (string-length uri)))
-
-
 (def (source-file-path? file-path)
   (or (string-suffix? "/gerbil.pkg" file-path)
       (any (lambda (file-path-ext)

@@ -71,7 +71,15 @@
                                     (hash ("prepareProvider" #t)))
                                   ("signatureHelpProvider"
                                     (hash ("triggerCharacters" [" " "\t"])))
+                                  ("diagnosticProvider"
+                                    #f) ; keep false since we push diags and don't support pull diags
 
+                                  ("selectionRangeProvider"
+                                    #f)
+                                  ("callHierarchyProvider"
+                                    #f)
+                                  ("typeHierarchyProvider"
+                                    #f)
                                   ("declarationProvider"
                                     #f)
                                   ("typeDefinitionProvider"
@@ -88,18 +96,8 @@
                                     #f)
                                   ("executeCommandProvider"
                                     (hash ("commands" [])))
-                                  ("selectionRangeProvider"
-                                    #f)
                                   ("linkedEditingRangeProvider"
                                     #f)
-                                  ("callHierarchyProvider"
-                                    #f)
-                                  ("typeHierarchyProvider"
-                                    #f)
-                                  ("diagnosticProvider"
-                                    #f)
-                                  ; ("diagnosticProvider"
-                                  ;   (hash ("identifier" "Gerbil") ("interFileDependencies" #t) ("workspaceDiagnostics" #f)))
 )))))))
 
 

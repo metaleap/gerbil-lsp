@@ -6,12 +6,15 @@
         :std/text/json
         ../handling
         ./types-incoming
-        ./types-outgoing
-        ./workspace-sync)
+        ./types-outgoing)
+
+
+(def tmp-some-file-path #f) ; TODO: remove once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
 
 
 (def (lsp-file->file-path (file : TextDocumentIdentifier))
-  (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
+  (set! tmp-some-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
+  tmp-some-file-path) ; TODO: ditch the `set!` & return directly once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
 
 
 (lsp-handler "textDocument/documentSymbol"
@@ -44,13 +47,14 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-search
     (using (params (make-WorkspaceSymbolParams params) :- WorkspaceSymbolParams)
-      [(make-WorkspaceSymbol  name: "Gerbil"
+      (if (not tmp-some-file-path) [] [
+        (make-WorkspaceSymbol name: "Gerbil"
                               kind: symbolkind-function
                               tags: []
-                              containerName: (string-append "**TODO:** call `defs-search` with `" params.query "`")
-                              location: (make-Location  uri: "file:///home/_/c/l/gerbil-lsp/lsp/msgs/types-incoming.ss"
+                              containerName: (string-append "**TODO:** call `ide/defs-search` with `" params.query "`")
+                              location: (make-Location  uri: tmp-some-file-path
                                                         range: (make-Range  (make-Position 0 1)
-                                                                            (make-Position 0 4))))])))
+                                                                            (make-Position 0 4))))]))))
 
 
 (lsp-handler "textDocument/definition"

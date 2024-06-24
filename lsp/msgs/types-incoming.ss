@@ -6,6 +6,11 @@
 
 
 
+(def (lsp-uri->file-path uri)
+  (substring uri (string-length "file://") (string-length uri)))
+
+
+
 (defclass (Position JSON)
   ( line
     character)
