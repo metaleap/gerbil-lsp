@@ -214,3 +214,15 @@
     command
     arguments)
   final: #t)
+
+
+(defclass (LogMessageParams JSON)
+  ( type
+    message)
+  final: #t)
+
+(def messagetype-error 1)
+(def messagetype-warning 2)
+(def messagetype-info 3)
+(def messagetype-log 4)
+(def messagetype-debug 5)

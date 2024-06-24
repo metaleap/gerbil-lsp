@@ -6,7 +6,8 @@
         :std/text/json
         ../handling
         ./types-incoming
-        ./types-outgoing)
+        ./types-outgoing
+        ./all-outgoing-messages)
 
 
 (def tmp-some-file-path #f) ; TODO: remove once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
@@ -185,5 +186,8 @@
     ; TODO: send code-eval reqs to `ide`'s current-file interp session eventually
     (using (params (make-ExecuteCommandParams params) :- ExecuteCommandParams)
       (case params.command
-        (("eval-in-file") 123)
-        (else 321)))))
+        (("eval-in-file")
+          (lsp-notify-window-logMessage! "TODO: Summon Le Eval Overlord" messagetype-info))
+        (else
+          (raise (format "Unknown command: ~a" params.command))))
+      (void))))

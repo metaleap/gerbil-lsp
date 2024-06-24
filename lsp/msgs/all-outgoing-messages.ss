@@ -34,3 +34,11 @@
   (lsp-notify! "textDocument/publishDiagnostics" (make-PublishDiagnosticsParams
                                                     uri: (file-path->lsp-uri source-file-path)
                                                     diagnostics: diagnostics)))
+
+
+
+; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_logMessage
+(def (lsp-notify-window-logMessage! message type)
+  (lsp-notify! "window/logMessage" (make-LogMessageParams
+                                      message: message
+                                      type: type)))
