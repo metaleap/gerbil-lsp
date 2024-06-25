@@ -187,8 +187,8 @@
     (using (params (make-ExecuteCommandParams params) :- ExecuteCommandParams)
       (case params.command
         (("eval-in-file")
-          (lsp-notify-window-showMessage! "TODO: Summon Le Eval Overlord" messagetype-info))
-          ; (lsp-notify-window-logMessage! "TODO: Summon Le Eval Overlord" messagetype-info))
+          (lsp-notify-window-showMessage! "TODO: Summon Le Eval Overlord"))
+          ; (lsp-notify-window-logMessage! "TODO: Summon Le Eval Overlord"))
         (else
           (raise (format "Unknown command: ~a" params.command))))
       (void))))
