@@ -63,12 +63,12 @@
     ; TODO: produce real results obtained from ../notes.md#lookup
     (using (params (make-DefinitionParams params) :- DefinitionParams)
       (let (source-file-path (lsp-file->file-path params.textDocument))
-      [ (make-Location uri: source-file-path
-                      range: (make-Range  (make-Position 0 1)
-                                          (make-Position 0 4)))
-        (make-Location uri: source-file-path
-                      range: (make-Range  (make-Position 2 1)
-                                          (make-Position 2 4)))]))))
+        [ (make-Location uri: source-file-path
+                        range: (make-Range  (make-Position 0 1)
+                                            (make-Position 0 4)))
+          (make-Location uri: source-file-path
+                        range: (make-Range  (make-Position 2 1)
+                                            (make-Position 2 4)))]))))
 
 
 (lsp-handler "textDocument/references"
@@ -133,16 +133,12 @@
 
 (lsp-handler "textDocument/prepareRename"
   (lambda (params)
-    (debugf "PR01")
     ; TODO: produce real results obtained from ../notes.md#can-rename
     (using (params (make-PrepareRenameParams params) :- PrepareRenameParams)
-      (debugf "PR02")
       (let (source-file-path (lsp-file->file-path params.textDocument))
-        (debugf "PR03")
         (let (ret (make-Range params.position
                               (make-Position  (Position-line params.position)
                                               (+ 4 (Position-character params.position)))))
-          (debugf "PR04")
           ret)))))
 
 
