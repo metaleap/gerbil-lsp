@@ -7,7 +7,8 @@
         ../handling
         ./types-incoming
         ./types-outgoing
-        ./all-outgoing-messages)
+        ./all-outgoing-messages
+        ./workspace-sync)
 
 
 (def client-is-gerbil-vscode-ext #f)
@@ -187,6 +188,12 @@
         (("announce-gerbil-vscode-ext")
           (set! client-is-gerbil-vscode-ext #t))
         (("eval-in-file")
-          "TODO: Summon Le Eval Overlord")
+          (cmd-eval-in-file (car params.arguments) (make-Range (cadr params.arguments))))
         (else
           (raise (format "Unknown command: ~a" params.command)))))))
+
+
+(def (cmd-eval-in-file source-file-path (range :- Range))
+  (if (not (source-file-path? source-file-path))
+    (raise (format "invalid Gerbil source file path: ~a" source-file-path))
+    (format "TODO: Summon Le Eval Overlord for ~a @ ~a .. ~a" source-file-path range.start range.end)))

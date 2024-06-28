@@ -1,6 +1,6 @@
 ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceFeatures
 ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_synchronization
-(export on-workspace-folders-changed lsp-uri->file-path)
+(export on-workspace-folders-changed lsp-uri->file-path source-file-path?)
 
 
 (import :std/sugar
