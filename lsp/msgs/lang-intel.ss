@@ -189,6 +189,8 @@
           (set! client-is-gerbil-vscode-ext #t))
         (("eval-in-file")
           (cmd-eval-in-file (car params.arguments) (make-Range (cadr params.arguments))))
+        (("eval-expr")
+          (cmd-eval-expr (car params.arguments) (cadr params.arguments)))
         (else
           (raise (format "Unknown command: ~a" params.command)))))))
 
@@ -197,3 +199,7 @@
   (if (not (source-file-path? source-file-path))
     (raise (format "invalid Gerbil source file path: ~a" source-file-path))
     (format "TODO: Summon Le Eval Overlord for ~a @ ~a .. ~a" source-file-path range.start range.end)))
+
+
+(def (cmd-eval-expr source-file-path expr)
+  (format "TODO: Summon Le Eval Overlord for expr `~a` in ctx of file '~a'" expr source-file-path))
