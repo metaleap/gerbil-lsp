@@ -10,8 +10,8 @@
         ./all-outgoing-messages)
 
 
+(def client-is-gerbil-vscode-ext #f)
 (def tmp-some-file-path #f) ; TODO: remove once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
-
 
 (def (lsp-file->file-path (file : TextDocumentIdentifier))
   (set! tmp-some-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
@@ -174,7 +174,9 @@
     (using (params (make-CodeActionParams params) :- CodeActionParams)
       (if (equal? (Range-start params.range) (Range-end params.range)) []
         (let (source-file-path (lsp-file->file-path params.textDocument))
-          [(make-Command title: "Eval" command: "eval-in-file" arguments: [params])])))))
+          (if client-is-gerbil-vscode-ext
+              []
+              [(make-Command title: "Eval" command: "eval-in-file" arguments: [params])]))))))
 
 
 (lsp-handler "workspace/executeCommand"
@@ -182,9 +184,9 @@
     ; TODO: send code-eval reqs to `ide`'s current-file interp session eventually
     (using (params (make-ExecuteCommandParams params) :- ExecuteCommandParams)
       (case params.command
+        (("announce-gerbil-vscode-ext")
+          (set! client-is-gerbil-vscode-ext #t))
         (("eval-in-file")
-          (lsp-notify-window-showMessage! "TODO: Summon Le Eval Overlord"))
-          ; (lsp-notify-window-logMessage! "TODO: Summon Le Eval Overlord"))
+          "TODO: Summon Le Eval Overlord")
         (else
-          (raise (format "Unknown command: ~a" params.command))))
-      (void))))
+          (raise (format "Unknown command: ~a" params.command)))))))
