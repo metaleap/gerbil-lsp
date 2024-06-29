@@ -23,58 +23,26 @@
 
 (lsp-handler "workspace/symbol"
   (lambda (params)
-    ; TODO: produce real results obtained from ../notes.md#defs-search
-    (using (params (make-WorkspaceSymbolParams params) :- WorkspaceSymbolParams)
-      (if (null? source-file-paths)
-          []
-          [(make-WorkspaceSymbol  name: "Gerbil"
-                                  kind: symbolkind-function
-                                  tags: []
-                                  containerName: (string-append "**TODO:** call `ide/defs-search` with `" params.query "`")
-                                  location: (make-Location  uri: (car source-file-paths)
-                                                            range: (make-Range  (make-Position 0 1)
-                                                                                (make-Position 0 4))))]))))
+    (using (lsp-impl :- Workspace-Symbol)
+      {lsp-impl.workspace-symbol (make-WorkspaceSymbolParams params)})))
 
 
 (lsp-handler "textDocument/definition"
   (lambda (params)
-    ; TODO: produce real results obtained from ../notes.md#lookup
-    (using (params (make-DefinitionParams params) :- DefinitionParams)
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        [ (make-Location uri: source-file-path
-                        range: (make-Range  (make-Position 0 1)
-                                            (make-Position 0 4)))
-          (make-Location uri: source-file-path
-                        range: (make-Range  (make-Position 2 1)
-                                            (make-Position 2 4)))]))))
+    (using (lsp-impl :- TextDocument-Definition)
+      {lsp-impl.textDocument-definition (make-DefinitionParams params)})))
 
 
 (lsp-handler "textDocument/references"
   (lambda (params)
-    ; TODO: produce real results obtained from ../notes.md#lookup
-    (using (params (make-ReferenceParams params) :- ReferenceParams)
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        [ (make-Location uri: source-file-path
-                        range: (make-Range  (make-Position 0 1)
-                                            (make-Position 0 4)))
-          (make-Location uri: source-file-path
-                        range: (make-Range  (make-Position 2 1)
-                                            (make-Position 2 4)))]))))
+    (using (lsp-impl :- TextDocument-References)
+      {lsp-impl.textDocument-references (make-ReferenceParams params)})))
 
 
 (lsp-handler "textDocument/documentHighlight"
   (lambda (params)
-    ; TODO: produce real results obtained from ../notes.md#occurrences
-    (using (params (make-DocumentHighlightParams params) :- DocumentHighlightParams)
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        [ (make-DocumentHighlight range: (make-Range  (make-Position 0 1)
-                                                      (make-Position 0 4))
-                                  kind: documenthighlightkind-text)
-          (make-DocumentHighlight range: (make-Range  (make-Position 2 1)
-                                                      (make-Position 2 4))
-                                  kind: documenthighlightkind-text)]))))
-
-
+    (using (lsp-impl :- TextDocument-DocumentHighlight)
+      {lsp-impl.textDocument-documentHighlight (make-DocumentHighlightParams params)})))
 
 
 (lsp-handler "textDocument/completion"

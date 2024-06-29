@@ -40,6 +40,7 @@
 
 (defmethod {workspace-symbol LspGerbil}
   (lambda (_ (params :- WorkspaceSymbolParams))
+    ; TODO: produce real results obtained from ../notes.md#defs-search
     (if (null? source-file-paths)
         []
         [(make-WorkspaceSymbol  name: "Gerbil"
@@ -54,6 +55,7 @@
 (defmethod {textDocument-definition LspGerbil}
   (lambda (_ (params :- DefinitionParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#lookup
       [ (make-Location  uri:    source-file-path
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
@@ -65,6 +67,7 @@
 (defmethod {textDocument-references LspGerbil}
   (lambda (_ (params :- ReferenceParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#lookup
       [ (make-Location  uri:    source-file-path
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
@@ -76,6 +79,7 @@
 (defmethod {textDocument-documentHighlight LspGerbil}
   (lambda (_ (params :- DocumentHighlightParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#occurrences
       [ (make-DocumentHighlight range:  (make-Range (make-Position 0 1)
                                                     (make-Position 0 4))
                                 kind:   documenthighlightkind-text)
