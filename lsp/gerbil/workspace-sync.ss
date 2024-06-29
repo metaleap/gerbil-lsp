@@ -113,7 +113,7 @@
       (for-each! changes (lambda ((file-event :- FileEvent))
         (def path (file-event-file-path file-event))
         (when (fs-path-not-dotted? path)
-          (cond ; TODO: `case` seems bugged with non-literal case-exprs, so `cond` for now
+          (cond
             ((eq? file-event.type filechangetype-deleted)
               (set! file-paths-deleted (append  file-paths-deleted
                                                 (filter (fs-path-in-dir? path) source-file-paths))))
