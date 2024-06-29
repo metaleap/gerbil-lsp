@@ -166,3 +166,10 @@
                               message: "TODO: take this out of `textDocument/didOpen` once `ide/on-file-notices-changed` is ready")
             ])
           (debugf "=== source file opened: ~a" source-file-path))))))
+
+
+(defmethod {initialized LspGerbil}
+  (lambda (_)
+    (lsp-request-workspace-workspaceFolders!
+      (lambda (workspace-folders)
+        (on-workspace-folders-changed (map make-WorkspaceFolder workspace-folders) [])))))

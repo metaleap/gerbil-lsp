@@ -52,7 +52,7 @@
                                   ("positionEncoding"
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
                                   ("textDocumentSync"
-                                    (hash ("openClose" #t)
+                                    (hash ("openClose" (is-TextDocument-DidOpenClose? lsp-impl))
                                           ("change" (if (is-TextDocument-DidChange? lsp-impl) 1 0))))
                                   ;; keep notebookDocumentSync entirely OUT (not _just_ null), or VSCode's official "LSP client" nodejs lib bugs out (wtf...)
                                   ; ("notebookDocumentSync"
@@ -114,16 +114,15 @@
 
 (lsp-handler "initialized"
   (lambda (_)
-    (lsp-request-workspace-workspaceFolders!
-      (lambda (all-workspace-folders)
-        (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))
-    ; we're not "making our own file-watcher" here below,
-    ; but instead are telling the client to file-watch for us.
-    ; sadly it doesn't suffice to just watch **/*.ss, because vscode sends no
-    ; individual file events from certain folder events like moved or deleted
-    (let (watcher (make-FileSystemWatcher kind: watchkind-all globPattern: "**/*"))
-      (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
-                                              (make-DidChangeWatchedFilesRegistrationOptions
-                                                watchers: [watcher])))
     (when (is-Initialized? lsp-impl)
-          (Initialized-initialized lsp-impl))))
+          (Initialized-initialized lsp-impl))
+    (when (is-Workspace-DidChangeWatchedFiles? lsp-impl)
+      ; we're not "making our own file-watcher" here below,
+      ; but instead are telling the client to file-watch for us.
+      ; sadly it doesn't suffice to just watch "**/*.ext", because vscode sends no
+      ; individual file events from certain folder events like moved or deleted, so
+      ; impls must determine folder-ness of event and deduce the file events, if needed.
+      (let (watcher (make-FileSystemWatcher kind: watchkind-all globPattern: "**/*"))
+        (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
+                                                (make-DidChangeWatchedFilesRegistrationOptions
+                                                  watchers: [watcher]))))))

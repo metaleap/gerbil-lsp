@@ -108,19 +108,21 @@
 
 (defmethod {textDocument-hover LspGerbil}
   (lambda (_ (params :- HoverParams))
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
-                              source-file-path
-                              (Position-line params.position)
-                              (Position-character params.position)))
-          (make-Hover range:    (void)
-                      contents: (make-MarkupContent kind:   markupkind-markdown
-                                                    value:  content))))))
+    (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#info-items
+      (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
+                            source-file-path
+                            (Position-line params.position)
+                            (Position-character params.position)))
+        (make-Hover range:    (void)
+                    contents: (make-MarkupContent kind:   markupkind-markdown
+                                                  value:  content))))))
 
 
 (defmethod {textDocument-prepareRename LspGerbil}
   (lambda (_ (params :- PrepareRenameParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#can-rename
       (make-Range params.position
                   (make-Position  (Position-line params.position)
                                   (+ 4 (Position-character params.position)))))))
@@ -129,6 +131,7 @@
 (defmethod {textDocument-rename LspGerbil}
   (lambda (_ (params :- RenameParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#rename
       (make-WorkspaceEdit
         changes: (hash (,(file-path->lsp-uri source-file-path) [
           (make-TextEdit  newText:  params.newName
@@ -145,6 +148,7 @@
 (defmethod {textDocument-signatureHelp LspGerbil}
   (lambda (_ (params :- SignatureHelpParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#signatures
       (make-SignatureHelp
         signatures: (if (fx>0? (Position-line params.position)) [] [(make-SignatureInformation
           label:          "(foo bar baz)"
@@ -171,6 +175,7 @@
     (case params.command
       (("announce-gerbil-vscode-ext")
         (set! client-is-gerbil-vscode-ext #t))
+      ; TODO: send code-eval reqs to `ide`'s current-file interp session
       (("eval-in-file")
         (cmd-eval-in-file (car params.arguments) (make-Range (cadr params.arguments))))
       (("eval-expr")
