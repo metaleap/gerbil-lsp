@@ -137,10 +137,9 @@
     ; TODO: produce real results obtained from ../notes.md#can-rename
     (using (params (make-PrepareRenameParams params) :- PrepareRenameParams)
       (let (source-file-path (lsp-file->file-path params.textDocument))
-        (let (ret (make-Range params.position
-                              (make-Position  (Position-line params.position)
-                                              (+ 4 (Position-character params.position)))))
-          ret)))))
+        (make-Range params.position
+                    (make-Position  (Position-line params.position)
+                                    (+ 4 (Position-character params.position))))))))
 
 
 (lsp-handler "textDocument/rename"

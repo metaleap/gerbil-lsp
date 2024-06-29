@@ -3,7 +3,7 @@
 (import :std/build-script)
 
 (defbuild-script
-  '("lsp/lsp" "lsp/handling"
+  '("lsp/lsp" "lsp/handling" "lsp/impl-api"
     "lsp/msgs/types-incoming" "lsp/msgs/types-outgoing" "lsp/msgs/all-outgoing-messages.ss"
     "lsp/msgs/lifecycle" "lsp/msgs/lang-intel" "lsp/msgs/workspace-sync"
     ; (exe: "lsp/gxlsp" bin: "gxlsp"))

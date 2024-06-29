@@ -6,7 +6,6 @@
 (import :std/sugar
         :std/logger
         :std/misc/list
-        :std/misc/path
         :std/misc/string
         ../handling
         ./types-incoming
@@ -14,15 +13,15 @@
         ./all-outgoing-messages)
 
 
-(def source-file-extensions [".ss"]) ; TODO: discuss & decide: add .scm or not?
-(def source-file-paths [])
 (def err-msg-fmt-fs "=== ignoring FS err while scrutinizing path ~a: ~a")
+(def source-file-paths [])
+(def source-file-extensions [".ss"]) ; TODO: discuss & decide: add .scm or not?
 
 
 (def (source-file-path? file-path)
   (or (string-suffix? "/gerbil.pkg" file-path)
       (any (lambda (file-path-ext)
-              (path-extension-is? file-path (string-append file-path-ext))
+              (string-suffix? file-path file-path-ext)
             ) source-file-extensions)))
 
 
