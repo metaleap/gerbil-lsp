@@ -12,6 +12,7 @@
 (defmethod {textDocument-documentSymbol LspGerbil}
   (lambda (_ (params :- DocumentSymbolParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#defs-in-file
       (let (sub (make-DocumentSymbol  name:           "SubSymbol"
                                       detail:         "a single child symbol"
                                       kind:           symbolkind-class
