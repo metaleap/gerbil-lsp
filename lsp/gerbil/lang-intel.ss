@@ -32,6 +32,10 @@
                                                           (make-Position 2 6))
                               children:       [sub])]))))
 
+(defmethod {multi-tree-label LspGerbil}
+  (lambda (_)
+    "TODO_DocumentSymbol_MultiTreeLabel"))
+
 
 (defmethod {workspace-symbol LspGerbil}
   (lambda (_ (params :- WorkspaceSymbolParams))
@@ -128,6 +132,10 @@
         ]))))))
 
 
+(defmethod {list-of-trigger-chars LspGerbil}
+  (lambda (_)
+    [" " "\t"]))
+
 (defmethod {textDocument-signatureHelp LspGerbil}
   (lambda (_ (params :- SignatureHelpParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
@@ -148,6 +156,10 @@
             [(make-Command title: "Eval" command: "eval-in-file" arguments: [params])])))))
 
 
+(defmethod {list-of-commands LspGerbil}
+  (lambda (_)
+    ["announce-gerbil-vscode-ext" "eval-in-file" "eval-expr"]))
+
 (defmethod {workspace-executeCommand LspGerbil}
   (lambda (_ (params :- ExecuteCommandParams))
     (case params.command
@@ -159,7 +171,6 @@
         (cmd-eval-expr (car params.arguments) (cadr params.arguments)))
       (else
         (raise (format "Unknown command: ~a" params.command))))))
-
 
 
 (def (cmd-eval-in-file source-file-path (range :- Range))

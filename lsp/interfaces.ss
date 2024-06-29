@@ -13,6 +13,7 @@
 
 
 (interface TextDocument-DocumentSymbol
+  (multi-tree-label)
   (textDocument-documentSymbol (params :- DocumentSymbolParams))) ; returns: [DocumentSymbol]
 
 (interface Workspace-Symbol
@@ -38,12 +39,14 @@
   (textDocument-rename (params :- RenameParams)))               ; returns WorkspaceEdit | (void)
 
 (interface TextDocument-SignatureHelp
+  (list-of-trigger-chars)
   (textDocument-signatureHelp (params :- SignatureHelpParams))) ; returns: SignatureHelp
 
 (interface TextDocument-CodeAction
   (textDocument-codeAction (params :- CodeActionParams))) ; returns: [Command]
 
 (interface Workspace-ExecuteCommand
+  (list-of-commands) ; returns: [:string]
   (workspace-executeCommand (params :- ExecuteCommandParams))) ; returns: <any>
 
 (interface Workspace-DidChangeWatchedFiles

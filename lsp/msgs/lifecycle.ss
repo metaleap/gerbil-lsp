@@ -45,41 +45,50 @@
         (set! lsp-client.workspaceFolders      .$workspaceFolders)
         (hash ("serverInfo"   +server-info+)
               ("capabilities" (hash
-                                  ("workspace" (hash
-                                    ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t)))))
+                                  ("workspace"
+                                    (if (Workspace-DidChangeWorkspaceFolders? lsp-impl)
+                                        (hash ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t))))
+                                        (void)))
                                   ("positionEncoding"
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
                                   ("textDocumentSync"
                                     (hash ("openClose" #t)
-                                          ("change" 1)))
-                                  ; keep notebookDocumentSync entirely OUT (not _just_ null), or VSCode's official "LSP client" node lib bugs out. wtf...
+                                          ("change" (if (TextDocument-DidChange? lsp-impl) 1 0))))
+                                  ;; keep notebookDocumentSync entirely OUT (not _just_ null), or VSCode's official "LSP client" nodejs lib bugs out (wtf...)
                                   ; ("notebookDocumentSync"
                                   ;   (void)) ; notebooks are mostly a client-side impl; eg. our VSC extension runs commands against this LSP for evals
-
                                   ("documentSymbolProvider"
-                                    (hash ("label" "TODO_DocSym_Label")))
+                                    (if (TextDocument-DocumentSymbol? lsp-impl)
+                                        (hash ("label" (TextDocument-DocumentSymbol-multi-tree-label lsp-impl)))
+                                        #f))
                                   ("workspaceSymbolProvider"
-                                    #t)
+                                    (Workspace-Symbol? lsp-impl))
                                   ("definitionProvider"
-                                    #t)
+                                    (TextDocument-Definition? lsp-impl))
                                   ("referencesProvider"
-                                    #t)
+                                    (TextDocument-References? lsp-impl))
                                   ("documentHighlightProvider"
-                                    #t)
+                                    (TextDocument-DocumentHighlight? lsp-impl))
                                   ("completionProvider"
-                                    #t)
+                                    (if (TextDocument-Completion? lsp-impl) (hash) (void)))
                                   ("hoverProvider"
-                                    #t)
+                                    (TextDocument-Hover? lsp-impl))
                                   ("renameProvider"
-                                    (hash ("prepareProvider" #t)))
+                                    (if (TextDocument-Rename? lsp-impl)
+                                        (hash ("prepareProvider" #t))
+                                        #f))
                                   ("signatureHelpProvider"
-                                    (hash ("triggerCharacters" [" " "\t"])))
+                                    (if (TextDocument-SignatureHelp? lsp-impl)
+                                        (hash ("triggerCharacters" (TextDocument-SignatureHelp-list-of-trigger-chars lsp-impl)))
+                                        (void)))
                                   ("diagnosticProvider"
                                     #f) ; keep false since we do "push diags" and don't support "pull diags"
                                   ("codeActionProvider"
-                                    #t)
+                                    (TextDocument-CodeAction? lsp-impl))
                                   ("executeCommandProvider"
-                                    (hash ("commands" ["eval-in-file"])))
+                                    (if (Workspace-ExecuteCommand? lsp-impl)
+                                        (hash ("commands" (Workspace-ExecuteCommand-list-of-commands lsp-impl)))
+                                        (void)))
 
                                   ("selectionRangeProvider"
                                     #f)
@@ -94,14 +103,13 @@
                                   ("implementationProvider"
                                     #f)
                                   ("codeLensProvider"
-                                    #f) ; when changing, it's an object not #t!
+                                    (void)) ; when changing, it's an object not #t!
                                   ("documentFormattingProvider"
                                     #f)
                                   ("documentRangeFormattingProvider"
                                     #f)
                                   ("linkedEditingRangeProvider"
-                                    #f)
-)))))))
+                                    #f))))))))
 
 
 (lsp-handler "initialized"
