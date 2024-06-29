@@ -8,7 +8,10 @@
         :std/sugar
         :std/logger
         ./lsp
-        ./gerbil/common)
+        ./interfaces
+        ./gerbil/common
+        ./gerbil/lang-intel
+        ./gerbil/workspace-sync)
 
 
 (deflogger gxlsp)
