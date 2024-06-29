@@ -3,6 +3,7 @@
 (import :std/sugar
         :std/logger
         ../handling
+        ../interfaces
         ./types-incoming
         ./types-outgoing
         ./workspace-sync
@@ -22,12 +23,13 @@
 
 
 (lsp-handler "shutdown"
-  (lambda (params)
-    (void)))
+  (lambda (_)
+    (when (Shutdown? lsp-impl)
+          (Shutdown-shutdown lsp-impl))))
 
 
 (lsp-handler "exit"
-  (lambda (params)
+  (lambda (_)
     (exit)))
 
 
@@ -103,7 +105,7 @@
 
 
 (lsp-handler "initialized"
-  (lambda (params)
+  (lambda (_)
     (lsp-request-workspace-workspaceFolders!
       (lambda (all-workspace-folders)
         (on-workspace-folders-changed (map make-WorkspaceFolder all-workspace-folders) [])))
@@ -114,4 +116,6 @@
     (let (watcher (make-FileSystemWatcher kind: watchkind-all globPattern: "**/*"))
       (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
                                               (make-DidChangeWatchedFilesRegistrationOptions
-                                                watchers: [watcher])))))
+                                                watchers: [watcher])))
+    (when (Initialized? lsp-impl)
+          (Initialized-initialized lsp-impl))))

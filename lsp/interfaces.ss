@@ -4,6 +4,14 @@
         ./msgs/types-incoming
         ./msgs/types-outgoing)
 
+
+
+; set by `lsp-serve` to a class instance implementing
+; any or many of the interfaces in ./interfaces.ss
+(def lsp-impl #f)
+
+
+
 (interface TextDocument-DocumentSymbol
   (textDocument-documentSymbol (params :- DocumentSymbolParams))) ; returns: [DocumentSymbol]
 

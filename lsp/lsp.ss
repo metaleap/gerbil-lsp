@@ -1,6 +1,7 @@
 (export lsp-transport-stdio
         lsp-transport-server-socket
-        lsp-serve)
+        lsp-serve
+        lsp-impl)
 
 (import :std/cli/getopt
         :std/io
@@ -12,11 +13,11 @@
         :std/net/json-rpc
         (only-in :std/net/httpd/handler read-request-headers read-request-body)
         ./handling
+        ./interfaces
         ; below imports only to trigger their top-level `lsp-handler` calls
         ./msgs/lifecycle
         ./msgs/lang-intel
         ./msgs/workspace-sync)
-
 
 
 ; continuations waiting for responses
@@ -44,7 +45,8 @@
 
 
 ;; The serving loop: processes requests through `handle-request!`.
-(def (lsp-serve (transport : Transport))
+(def (lsp-serve impl (transport : Transport))
+  (set! lsp-impl impl)
   (debugf "=== lsp-serve")
   (def json-outgoing #f)
   (def json-incoming #f)

@@ -7,7 +7,8 @@
 (import :std/cli/getopt
         :std/sugar
         :std/logger
-        ./lsp)
+        ./lsp
+        ./gerbil/common)
 
 
 (deflogger gxlsp)
@@ -48,4 +49,4 @@
           (lsp-transport-server-socket .?addr))
         (else
           (lsp-transport-stdio))))
-    (lsp-serve transport)))
+    (lsp-serve (make-LspGerbil) transport)))
