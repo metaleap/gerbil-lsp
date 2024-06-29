@@ -12,11 +12,6 @@
 
 
 (def client-is-gerbil-vscode-ext #f)
-(def tmp-some-file-path #f) ; TODO: remove once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
-
-(def (lsp-file->file-path (file : TextDocumentIdentifier))
-  (set! tmp-some-file-path (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
-  tmp-some-file-path) ; TODO: ditch the `set!` & return directly once `lsp-handler "workspace/symbol"` uses `ide/defs-search`
 
 
 (lsp-handler "textDocument/documentSymbol"
@@ -49,12 +44,12 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-search
     (using (params (make-WorkspaceSymbolParams params) :- WorkspaceSymbolParams)
-      (if (not tmp-some-file-path) [] [
+      (if (null? source-file-paths) [] [
         (make-WorkspaceSymbol name: "Gerbil"
                               kind: symbolkind-function
                               tags: []
                               containerName: (string-append "**TODO:** call `ide/defs-search` with `" params.query "`")
-                              location: (make-Location  uri: tmp-some-file-path
+                              location: (make-Location  uri: (car source-file-paths)
                                                         range: (make-Range  (make-Position 0 1)
                                                                             (make-Position 0 4))))]))))
 

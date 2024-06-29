@@ -41,6 +41,9 @@
   (lambda (this json-obj) (when json-obj
     (set! this.uri (hash-get json-obj "uri")))))
 
+(def (lsp-file->file-path (file : TextDocumentIdentifier))
+  (lsp-uri->file-path (TextDocumentIdentifier-uri file)))
+
 
 
 (defclass (TextDocumentPositionParams JSON)
