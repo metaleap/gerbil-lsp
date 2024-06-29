@@ -90,19 +90,20 @@
 
 (defmethod {textDocument-completion LspGerbil}
   (lambda (_ (params :- CompletionParams))
-      (let (source-file-path (lsp-file->file-path params.textDocument))
-        (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
-                                source-file-path
-                                (Position-line params.position)
-                                (Position-character params.position)))
-          [(make-CompletionItem label:          "TODO"
-                                labelDetails:   (make-CompletionItemLabelDetails  detail: "_LD_detail_"
-                                                                                  description: "_LD_description_")
-                                kind:           completionitemkind-function
-                                tags:           []
-                                detail:         "DetailGoesHere"
-                                documentation:  (make-MarkupContent kind: markupkind-markdown
-                                                                    value: content))]))))
+    (let (source-file-path (lsp-file->file-path params.textDocument))
+      ; TODO: produce real results obtained from ../notes.md#completions
+      (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
+                              source-file-path
+                              (Position-line params.position)
+                              (Position-character params.position)))
+        [(make-CompletionItem label:          "TODO"
+                              labelDetails:   (make-CompletionItemLabelDetails  detail: "_LD_detail_"
+                                                                                description: "_LD_description_")
+                              kind:           completionitemkind-function
+                              tags:           []
+                              detail:         "DetailGoesHere"
+                              documentation:  (make-MarkupContent kind: markupkind-markdown
+                                                                  value: content))]))))
 
 
 (defmethod {textDocument-hover LspGerbil}

@@ -118,6 +118,11 @@ Results:
   - the _key_ is the path of an editor-side (ie. `on-source-file-changes`-introduced) source file that the _value_ applies to
   - the _value_ is a flat list (no tree hierarchy) of all the (top-level-only) matching defs/decls (result struct type **just like above** in `defs-in-file`, just with `children` neither populated nor even computed) found in that source file
 
+**To consider:**
+
+- Exact matches to appear before prefix matches, which appear before substring matches
+- Some LSP clients might (and VSCode does) fire off requests as the user types each char of their query. A heuristic length-dependent behavior such as "queries with less than _n_ (eg. 3) chars only yielding exact matches (no prefix / substring matches)" might be sensible.
+
 ## _`lookup`_
 
 [Demo scenario](https://user-images.githubusercontent.com/11874914/28750773-d4d38782-74f4-11e7-98a0-a6d4b041e59c.png)
