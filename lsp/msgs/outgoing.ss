@@ -7,8 +7,7 @@
         :std/net/json-rpc
         ../handling
         ./types-incoming
-        ./types-outgoing
-        )
+        ./types-outgoing)
 
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_workspaceFolders

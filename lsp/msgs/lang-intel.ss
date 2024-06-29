@@ -7,7 +7,7 @@
         ../handling
         ./types-incoming
         ./types-outgoing
-        ./all-outgoing-messages
+        ./outgoing
         ./workspace-sync)
 
 
@@ -44,14 +44,15 @@
   (lambda (params)
     ; TODO: produce real results obtained from ../notes.md#defs-search
     (using (params (make-WorkspaceSymbolParams params) :- WorkspaceSymbolParams)
-      (if (null? source-file-paths) [] [
-        (make-WorkspaceSymbol name: "Gerbil"
-                              kind: symbolkind-function
-                              tags: []
-                              containerName: (string-append "**TODO:** call `ide/defs-search` with `" params.query "`")
-                              location: (make-Location  uri: (car source-file-paths)
-                                                        range: (make-Range  (make-Position 0 1)
-                                                                            (make-Position 0 4))))]))))
+      (if (null? source-file-paths)
+          []
+          [(make-WorkspaceSymbol  name: "Gerbil"
+                                  kind: symbolkind-function
+                                  tags: []
+                                  containerName: (string-append "**TODO:** call `ide/defs-search` with `" params.query "`")
+                                  location: (make-Location  uri: (car source-file-paths)
+                                                            range: (make-Range  (make-Position 0 1)
+                                                                                (make-Position 0 4))))]))))
 
 
 (lsp-handler "textDocument/definition"

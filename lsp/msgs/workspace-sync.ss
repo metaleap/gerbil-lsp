@@ -10,7 +10,7 @@
         ../handling
         ./types-incoming
         ./types-outgoing
-        ./all-outgoing-messages)
+        ./outgoing)
 
 
 (def err-msg-fmt-fs "=== ignoring FS err while scrutinizing path ~a: ~a")

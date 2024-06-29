@@ -6,7 +6,7 @@
         ./types-incoming
         ./types-outgoing
         ./workspace-sync
-        ./all-outgoing-messages
+        ./outgoing
         ./workspace-sync)
 
 (def +server-name+        "gxlsp")
