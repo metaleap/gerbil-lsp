@@ -24,7 +24,7 @@
 
 (lsp-handler "shutdown"
   (lambda (_)
-    (when (Shutdown? lsp-impl)
+    (when (is-Shutdown? lsp-impl)
           (Shutdown-shutdown lsp-impl))))
 
 
@@ -46,47 +46,47 @@
         (hash ("serverInfo"   +server-info+)
               ("capabilities" (hash
                                   ("workspace"
-                                    (if (Workspace-DidChangeWorkspaceFolders? lsp-impl)
+                                    (if (is-Workspace-DidChangeWorkspaceFolders? lsp-impl)
                                         (hash ("workspaceFolders" (hash ("supported" #t) ("changeNotifications" #t))))
                                         (void)))
                                   ("positionEncoding"
                                     "utf-16") ; utf-16 sadly mandatory for servers & clients (other encs optional, but no point then)
                                   ("textDocumentSync"
                                     (hash ("openClose" #t)
-                                          ("change" (if (TextDocument-DidChange? lsp-impl) 1 0))))
+                                          ("change" (if (is-TextDocument-DidChange? lsp-impl) 1 0))))
                                   ;; keep notebookDocumentSync entirely OUT (not _just_ null), or VSCode's official "LSP client" nodejs lib bugs out (wtf...)
                                   ; ("notebookDocumentSync"
                                   ;   (void)) ; notebooks are mostly a client-side impl; eg. our VSC extension runs commands against this LSP for evals
                                   ("documentSymbolProvider"
-                                    (if (TextDocument-DocumentSymbol? lsp-impl)
+                                    (if (is-TextDocument-DocumentSymbol? lsp-impl)
                                         (hash ("label" (TextDocument-DocumentSymbol-multi-tree-label lsp-impl)))
                                         #f))
                                   ("workspaceSymbolProvider"
-                                    (Workspace-Symbol? lsp-impl))
+                                    (is-Workspace-Symbol? lsp-impl))
                                   ("definitionProvider"
-                                    (TextDocument-Definition? lsp-impl))
+                                    (is-TextDocument-Definition? lsp-impl))
                                   ("referencesProvider"
-                                    (TextDocument-References? lsp-impl))
+                                    (is-TextDocument-References? lsp-impl))
                                   ("documentHighlightProvider"
-                                    (TextDocument-DocumentHighlight? lsp-impl))
+                                    (is-TextDocument-DocumentHighlight? lsp-impl))
                                   ("completionProvider"
-                                    (if (TextDocument-Completion? lsp-impl) (hash) (void)))
+                                    (if (is-TextDocument-Completion? lsp-impl) (hash) (void)))
                                   ("hoverProvider"
-                                    (TextDocument-Hover? lsp-impl))
+                                    (is-TextDocument-Hover? lsp-impl))
                                   ("renameProvider"
-                                    (if (TextDocument-Rename? lsp-impl)
+                                    (if (is-TextDocument-Rename? lsp-impl)
                                         (hash ("prepareProvider" #t))
                                         #f))
                                   ("signatureHelpProvider"
-                                    (if (TextDocument-SignatureHelp? lsp-impl)
+                                    (if (is-TextDocument-SignatureHelp? lsp-impl)
                                         (hash ("triggerCharacters" (TextDocument-SignatureHelp-list-of-trigger-chars lsp-impl)))
                                         (void)))
                                   ("diagnosticProvider"
                                     #f) ; keep false since we do "push diags" and don't support "pull diags"
                                   ("codeActionProvider"
-                                    (TextDocument-CodeAction? lsp-impl))
+                                    (is-TextDocument-CodeAction? lsp-impl))
                                   ("executeCommandProvider"
-                                    (if (Workspace-ExecuteCommand? lsp-impl)
+                                    (if (is-Workspace-ExecuteCommand? lsp-impl)
                                         (hash ("commands" (Workspace-ExecuteCommand-list-of-commands lsp-impl)))
                                         (void)))
 
@@ -125,5 +125,5 @@
       (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
                                               (make-DidChangeWatchedFilesRegistrationOptions
                                                 watchers: [watcher])))
-    (when (Initialized? lsp-impl)
+    (when (is-Initialized? lsp-impl)
           (Initialized-initialized lsp-impl))))
