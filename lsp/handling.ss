@@ -8,6 +8,7 @@
 (def +lsp-handlers+ (make-hash-table))
 (def +lsp-new-outgoing-reqs+ (make-hash-table))
 
+
 ;; handles a just-parsed incoming JSON-RPC message
 (def (lsp-handle method params)
   (def exists (hash-key? +lsp-handlers+ method))
@@ -21,12 +22,12 @@
         (raise e)))))) ; rethrow so Request's Response will contain the error details
 
 
-;; used by `./msgs/*.ss` modules to define LSP incoming-message handlers
+;; used by `./msgs-*.ss` modules to define LSP incoming-message handlers
 (def (lsp-handler method handler)
   (hash-put! +lsp-handlers+ method handler))
 
 
-;; used by `./msgs/*.ss` modules to enqueue LSP Requests to send to the client
+;; used to enqueue LSP Requests to send to the client
 (def (lsp-request! method params on-resp)
   (def req-id (symbol->string (gensym)))
   (hash-put! +lsp-new-outgoing-reqs+  req-id
@@ -38,7 +39,7 @@
                                             on-resp)))
 
 
-;; used by `./msgs/*.ss` modules to enqueue LSP Notifications to send to the client
+;; used to enqueue LSP Notifications to send to the client
 (def (lsp-notify! method params)
   (hash-put! +lsp-new-outgoing-reqs+ (gensym) (cons (json-rpc-request
                                                       jsonrpc: json-rpc-version

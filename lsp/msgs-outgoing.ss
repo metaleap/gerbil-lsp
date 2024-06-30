@@ -5,7 +5,7 @@
         :std/os/socket
         :std/text/json
         :std/net/json-rpc
-        ../handling
+        ./handling
         ./types-incoming
         ./types-outgoing)
 

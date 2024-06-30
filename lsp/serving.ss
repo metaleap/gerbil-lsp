@@ -14,7 +14,7 @@
         ./handling
         ./interfaces
         ; below import _required_ to trigger all its top-level `lsp-handler` registration calls
-        ./msgs/incoming)
+        ./msgs-incoming)
 
 
 ; continuations waiting for Responses by the LSP client to Requests we sent to it

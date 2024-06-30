@@ -2,8 +2,8 @@
 
 (import :std/sugar
         :std/format
-        ../msgs/types-incoming
-        ../msgs/types-outgoing
+        ../types-incoming
+        ../types-outgoing
         ./common
         ./workspace-sync)
 

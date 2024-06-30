@@ -1,8 +1,8 @@
 (export #t)
 
 (import :std/sugar
-        ./msgs/types-incoming
-        ./msgs/types-outgoing)
+        ./types-incoming
+        ./types-outgoing)
 
 
 ;; a language server based on the `lsp` package is an instance of a class

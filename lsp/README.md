@@ -12,4 +12,4 @@ The full LSP 3.17 feature set is **not** implemented: so far, only the LSP 3.17
 features required by `lsp/gerbil` are exposed and supported by `lsp`.
 
 Should further LSP features be needed, the `lsp` package needs to be extended accordingly, with such
-features to be brought in to `interfaces.ss` and `msgs/*.ss` in the same manner as the existing ones.
+features to be brought in to `interfaces.ss` and `types-*.ss` and `msgs-*.ss` in the same manner as the existing ones.

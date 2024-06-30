@@ -7,9 +7,9 @@
         :std/misc/list
         :std/misc/string
         ./common
-        ../msgs/outgoing
-        ../msgs/types-incoming
-        ../msgs/types-outgoing)
+        ../msgs-outgoing
+        ../types-incoming
+        ../types-outgoing)
 
 
 (def … compose1)

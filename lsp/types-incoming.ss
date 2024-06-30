@@ -2,7 +2,7 @@
 
 (import :std/sugar
         :std/text/json
-        ../handling)
+        ./handling)
 
 
 

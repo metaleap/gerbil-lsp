@@ -1,10 +1,10 @@
 (import :std/sugar
         :std/logger
-        ../handling
-        ../interfaces
+        ./handling
+        ./interfaces
         ./types-incoming
         ./types-outgoing
-        ./outgoing)
+        ./msgs-outgoing)
 
 
 (def lsp-client #f) ; on init, is set to hashtable of https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
