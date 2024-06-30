@@ -21,7 +21,7 @@
 (def (source-file-path? file-path)
   (or (string-suffix? "/gerbil.pkg" file-path)
       (any (lambda (file-path-ext)
-              (string-suffix? file-path file-path-ext)
+              (string-suffix? file-path-ext file-path)
             ) source-file-extensions)))
 
 
@@ -169,7 +169,7 @@
 
 
 (defmethod {initialized LspGerbil}
-  (lambda (_)
+  (lambda (_ _)
     (lsp-request-workspace-workspaceFolders!
       (lambda (workspace-folders)
         (on-workspace-folders-changed (map make-WorkspaceFolder workspace-folders) [])))))

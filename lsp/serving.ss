@@ -2,8 +2,8 @@
         lsp-transport-server-socket
         lsp-serve)
 
-(import :std/cli/getopt
-        :std/io
+(import :std/io
+        :std/format
         :std/sugar
         :std/logger
         :std/misc/list
@@ -41,10 +41,14 @@
 
 
 
+
 ;; The serving loop: processes requests through `handle-request!`.
 (def (lsp-serve impl (transport : Transport))
-  (set! lsp-impl impl)
-  (debugf "=== lsp-serve")
+  (unless (is-LanguageServer? impl)
+    (raise (format "~a does not implement LanguageServer")))
+  (using (impl :- LanguageServer)
+    (set! lsp-impl impl)
+    (debugf (format "=== lsp-serve ~a v~a" {impl.server-name} {impl.server-version})))
   (def json-outgoing #f)
   (def json-incoming #f)
   (def done #f)
