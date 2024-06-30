@@ -78,12 +78,8 @@
                                         (hash ("commands" (LspHandlerOf-Workspace-ExecuteCommand-list-of-commands lsp-impl)))
                                         (void)))
 
-                                  ("selectionRangeProvider"
-                                    #f)
-                                  ("callHierarchyProvider"
-                                    #f)
-                                  ("typeHierarchyProvider"
-                                    #f)
+                                  ;; below: currently unimplemented. when implementing one, move it above!
+
                                   ("declarationProvider"
                                     #f)
                                   ("typeDefinitionProvider"
@@ -95,6 +91,12 @@
                                   ("documentFormattingProvider"
                                     #f)
                                   ("documentRangeFormattingProvider"
+                                    #f)
+                                  ("callHierarchyProvider"
+                                    #f)
+                                  ("typeHierarchyProvider"
+                                    #f)
+                                  ("selectionRangeProvider"
                                     #f)
                                   ("linkedEditingRangeProvider"
                                     #f))))))))
