@@ -3,10 +3,10 @@
 (import :std/build-script)
 
 (defbuild-script
-  '("lsp/lsp" "lsp/handling" "lsp/interfaces"
-    "lsp/msgs/types-incoming" "lsp/msgs/types-outgoing" "lsp/msgs/outgoing.ss"
-    "lsp/msgs/lifecycle" "lsp/msgs/lang-intel" "lsp/msgs/workspace-sync"
-    ; (exe: "lsp/gxlsp" bin: "gxlsp"))
+  '("lsp/serving" "lsp/handling" "lsp/interfaces"
+    "lsp/msgs/types-incoming" "lsp/msgs/types-outgoing" "lsp/msgs/outgoing" "lsp/msgs/incoming"
+
     "lsp/gerbil/common" "lsp/gerbil/lang-intel" "lsp/gerbil/workspace-sync"
+    ; (exe: "lsp/gxlsp" bin: "gxlsp"))
      "lsp/gxlsp")
   optimize: #f parallelize: 4)

@@ -7,11 +7,14 @@
 (import :std/cli/getopt
         :std/sugar
         :std/logger
-        ./lsp
+
         ./interfaces
+        ./serving
+
         ./gerbil/common
         ./gerbil/lang-intel
         ./gerbil/workspace-sync)
+
 
 
 (deflogger gxlsp)

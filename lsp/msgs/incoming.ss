@@ -1,25 +1,18 @@
-;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
-
 (import :std/sugar
         :std/logger
         ../handling
         ../interfaces
         ./types-incoming
         ./types-outgoing
-        ./workspace-sync
-        ./outgoing
-        ./workspace-sync)
-
-(def +server-name+        "gxlsp")
-(def +server-version+     "0.0.1")
-(def +server-info+        (hash ("name" +server-name+) ("version" +server-version+)))
+        ./outgoing)
 
 
-(defstruct LspClient  ( client-name client-version ;; obtained from InitializeParams
-                        initializationOptions capabilities workspaceFolders ;; dito
-                      ) final: #t)
-;; gxlsp is a single-client server for now.
-(def +lsp-client+ (make-LspClient #f #f #f #f #f))
+(def lsp-client #f) ; on init, is set to hashtable of https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+
+
+
+
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lifeCycleMessages
 
 
 (lsp-handler "shutdown"
@@ -35,15 +28,10 @@
 
 (lsp-handler "initialize"
   (lambda (params)
-    (using (lsp-client +lsp-client+ :- LspClient)
+    (using (lsp-impl :- LanguageServer)
       (let-hash params
-        (when .$clientInfo
-          (set! lsp-client.client-name    (hash-get .$clientInfo "name"))
-          (set! lsp-client.client-version (hash-get .$clientInfo "version")))
-        (set! lsp-client.initializationOptions .$initializationOptions)
-        (set! lsp-client.capabilities          .$capabilities)
-        (set! lsp-client.workspaceFolders      .$workspaceFolders)
-        (hash ("serverInfo"   +server-info+)
+        (set! lsp-client .$clientInfo)
+        (hash ("serverInfo"   (hash ("name" {lsp-impl.server-name}) ("version" {lsp-impl.server-version})))
               ("capabilities" (hash
                                   ("workspace"
                                     (if (is-Workspace-DidChangeWorkspaceFolders? lsp-impl)
@@ -115,7 +103,7 @@
 (lsp-handler "initialized"
   (lambda (_)
     (when (is-Initialized? lsp-impl)
-          (Initialized-initialized lsp-impl))
+          (Initialized-initialized lsp-impl lsp-client))
     (when (is-Workspace-DidChangeWatchedFiles? lsp-impl)
       ; we're not "making our own file-watcher" here below,
       ; but instead are telling the client to file-watch for us.
@@ -126,3 +114,117 @@
         (lsp-request-client-registerCapability! "workspace/didChangeWatchedFiles"
                                                 (make-DidChangeWatchedFilesRegistrationOptions
                                                   watchers: [watcher]))))))
+
+
+
+
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#languageFeatures
+
+
+(lsp-handler "textDocument/documentSymbol"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-DocumentSymbol)
+      {lsp-impl.textDocument-documentSymbol (make-DocumentSymbolParams params)})))
+
+
+(lsp-handler "workspace/symbol"
+  (lambda (params)
+    (using (lsp-impl :- Workspace-Symbol)
+      {lsp-impl.workspace-symbol (make-WorkspaceSymbolParams params)})))
+
+
+(lsp-handler "textDocument/definition"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-Definition)
+      {lsp-impl.textDocument-definition (make-DefinitionParams params)})))
+
+
+(lsp-handler "textDocument/references"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-References)
+      {lsp-impl.textDocument-references (make-ReferenceParams params)})))
+
+
+(lsp-handler "textDocument/documentHighlight"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-DocumentHighlight)
+      {lsp-impl.textDocument-documentHighlight (make-DocumentHighlightParams params)})))
+
+
+(lsp-handler "textDocument/completion"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-Completion)
+      {lsp-impl.textDocument-completion (make-CompletionParams params)})))
+
+
+(lsp-handler "textDocument/hover"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-Hover)
+      {lsp-impl.textDocument-hover (make-HoverParams params)})))
+
+
+(lsp-handler "textDocument/prepareRename"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-Rename)
+      {lsp-impl.textDocument-prepareRename (make-PrepareRenameParams params)})))
+
+
+(lsp-handler "textDocument/rename"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-Rename)
+      {lsp-impl.textDocument-rename (make-RenameParams params)})))
+
+
+(lsp-handler "textDocument/signatureHelp"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-SignatureHelp)
+      {lsp-impl.textDocument-signatureHelp (make-SignatureHelpParams params)})))
+
+
+(lsp-handler "textDocument/codeAction"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-CodeAction)
+      {lsp-impl.textDocument-codeAction (make-CodeActionParams params)})))
+
+
+(lsp-handler "workspace/executeCommand"
+  (lambda (params)
+    (using (lsp-impl :- Workspace-ExecuteCommand)
+      {lsp-impl.workspace-executeCommand (make-ExecuteCommandParams params)})))
+
+
+
+
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceFeatures
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_synchronization
+
+
+(lsp-handler "workspace/didChangeWorkspaceFolders"
+  (lambda (params)
+    (using (lsp-impl :- Workspace-DidChangeWorkspaceFolders)
+      {lsp-impl.workspace-didChangeWorkspaceFolders (make-DidChangeWorkspaceFoldersParams params)})))
+
+
+(lsp-handler "workspace/didChangeWatchedFiles"
+  (lambda (params)
+    (when (is-Workspace-DidChangeWatchedFiles? lsp-impl) ; check needed in _this_ case
+      (using (lsp-impl :- Workspace-DidChangeWatchedFiles)
+        {lsp-impl.workspace-didChangeWatchedFiles (make-DidChangeWatchedFilesParams params)}))))
+
+
+(lsp-handler "textDocument/didOpen"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-DidOpenClose)
+      {lsp-impl.textDocument-didOpen (make-DidOpenTextDocumentParams params)})))
+
+
+(lsp-handler "textDocument/didClose"
+  (lambda (params)
+    (using (lsp-impl :- TextDocument-DidOpenClose)
+      {lsp-impl.textDocument-didClose (make-DidCloseTextDocumentParams params)})))
+
+
+(lsp-handler "textDocument/didChange"
+  (lambda (params)
+    (using (lsp-impl :- Workspace-DidChangeWatchedFiles)
+      {lsp-impl.workspace-didChangeWatchedFiles (make-DidChangeWatchedFilesParams params)})))

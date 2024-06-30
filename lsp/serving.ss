@@ -1,7 +1,6 @@
 (export lsp-transport-stdio
         lsp-transport-server-socket
-        lsp-serve
-        lsp-impl)
+        lsp-serve)
 
 (import :std/cli/getopt
         :std/io
@@ -14,10 +13,8 @@
         (only-in :std/net/httpd/handler read-request-headers read-request-body)
         ./handling
         ./interfaces
-        ; below imports only to trigger their top-level `lsp-handler` calls
-        ./msgs/lifecycle
-        ./msgs/lang-intel
-        ./msgs/workspace-sync)
+        ; below import _required_ to trigger all its top-level `lsp-handler` registration calls
+        ./msgs/incoming)
 
 
 ; continuations waiting for responses
