@@ -1,6 +1,6 @@
 ;;; -*- Gerbil -*-
 ;;; © 2024 belmarca, metaleap
-;;; The Gerbil LSP Server
+;;; The Gerbil LSP Language Server
 
 (export main)
 
@@ -26,18 +26,18 @@
     program: "gxlsp"
     help: "The Gerbil LSP Server"
 
+    (flag   'stdio "--stdio"
+              help: "Use standard-streams transport. Also the default if no other transport is specified.")
     (option 'addr "--addr"
-              help: "The address:port to TCP-listen at, eg. 127.0.0.1:12512."
+              help: "Use TCP transport with gxlsp listening at the specified address:port (eg. 127.0.0.1:12512)."
               default: "")
     ;; https://github.com/microsoft/vscode-languageserver-node/blob/33cbe5c87032cb53cf30c2b90f29d22a45ee6800/client/src/node/main.ts#L453-L462
     ; (option 'pipe
-    ;           help: "Not implemented. Uses named pipe of the specified pipe name.")
+    ;           help: "Not implemented. Use named-pipes transport with the specified pipe name.")
     ; (option 'socket
-    ;           help: "Not implemented. TCP socket connection, where the LSP client is the listener at the specified port.")
-    (flag   'stdio "--stdio"
-              help: "If present, forces standard-streams transport.")
+    ;           help: "Not implemented. Use TCP transport with the LSP client listening (for gxlsp to connect) at the specified port.")
     (option 'loglevel "-l" "--loglevel"
-              help: "logger loglevel: 0 (error), 1 (warn), 2 (info), 3 (debug) or 4 (verbose)"
+              help: "logger loglevel: 0 (error), 1 (warn), 2 (info), 3 (debug) or 4 (verbose)."
               value: string->number
               default: 0)))
 

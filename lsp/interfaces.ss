@@ -69,26 +69,26 @@
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_didChangeWatchedFiles
 (interface Workspace-DidChangeWatchedFiles
-  (workspace-didChangeWatchedFiles (params :- DidChangeWatchedFilesParams)))
+  (workspace-didChangeWatchedFiles (params :- DidChangeWatchedFilesParams))) ; returns: (void)
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_didChangeWorkspaceFolders
 (interface Workspace-DidChangeWorkspaceFolders
-  (workspace-didChangeWorkspaceFolders (params :- DidChangeWorkspaceFoldersParams)))
+  (workspace-didChangeWorkspaceFolders (params :- DidChangeWorkspaceFoldersParams))) ; returns: (void)
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
 (interface TextDocument-DidChange
-  (textDocument-didChange (params :- DidChangeTextDocumentParams)))
+  (textDocument-didChange (params :- DidChangeTextDocumentParams))) ; returns: (void)
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didClose
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
 (interface TextDocument-DidOpenClose
-  (textDocument-didClose (params :- DidCloseTextDocumentParams))
-  (textDocument-didOpen (params :- DidOpenTextDocumentParams)))
+  (textDocument-didClose (params :- DidCloseTextDocumentParams)) ; returns: (void)
+  (textDocument-didOpen (params :- DidOpenTextDocumentParams))) ; returns: (void)
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#shutdown
 (interface Shutdown
-  (shutdown))
+  (shutdown)) ; returns: (void)
 
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
 (interface Initialized
-  (initialized client-capabilities))
+  (initialized client-capabilities)) ; returns: (void)
