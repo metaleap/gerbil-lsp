@@ -1,17 +1,17 @@
-List of feature suggestions that'll be most-desirable for `std/ide` to expose (to consumers such as `lsp`, and others).
+# The `ide` API surface as envisioned/desired by `lsp/gerbil`
 
 **Namings** used in here are just provisional / placeholder idents, not me prescribing how exports from `ide` should be called.  =)
 
-**Paths:** all paths consumed or produced `lsp`-side are absolute.
+**Paths:** all paths consumed or produced `lsp/gerbil`-side are absolute.
 
 **Quick jumps** &mdash; [language intel](#2-language-intel) in "presumed dev-dependency order":
 - [defs-in-file](#defs-in-file), [defs-search](#defs-search), [lookup](#lookup), [occurrences](#occurrences), [completions](#completions), [info-items](#info-items), [can-rename](#can-rename) and [rename](#rename), [on-file-notices-changed](#on-file-notices-changed) (diagnostics), [signatures](#signatures)
 
 # 1. "Workspace" / source-file tracking & sync
 
-**No file-watchings in `ide` or `lsp`!**
+**No file-watchings in `ide` or `lsp/gerbil`!**
 
-Since `ide` will have running some kind of _"ongoing / long-lived interpreter(ish) session"_, `ide` shall expose funcs for its consumers (incl. `lsp`) to notify it about the following events, so that it can on-the-fly update its internal live representations about the codebase-in-session, (re)analyze changed / new files (or their importers, or still-existing importers of just-removed files!) etc:
+Since `ide` will have running some kind of _"ongoing / long-lived interpreter(ish) session"_, `ide` shall expose funcs for its consumers (incl. `lsp/gerbil`) to notify it about the following events, so that it can on-the-fly update its internal live representations about the codebase-in-session, (re)analyze changed / new files (or their importers, or still-existing importers of just-removed files!) etc:
 
 Necessary:
 
@@ -28,7 +28,7 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 (All file and folder _rename_ events result in `on-source-file-changes` calls with corresponding _removed_ / _added_ combinations, because VSCode alone showed that LSP clients cannot be relied upon to furnish sufficiently-robust rename watching and reporting.)
 
-**All of the above means that _neither_ `lsp` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho) and hence "client-side", whether that's LSP-speaking text editors (they do that already) or any other `ide` consumers.
+**All of the above means that _neither_ `lsp/gerbil` _nor_ `ide` has to implement and maintain a file-watcher!** Such a responsibility, complexity and resource mgmt should be outside of both (imho) and hence "client-side", whether that's LSP-speaking text editors (they do that already) or any other `ide` consumers.
 
 # 2. Language intel
 
@@ -36,7 +36,7 @@ Optional, **if** it is of any practical interest to `ide` (for example to "prior
 
 **Important:** most of these will receive and/or return _positions_ (line/col pair) and/or _"ranges"_ (pair of start _position_ and end _position_).
   - Handling those `ide`-side (in sync with perhaps underlying byte-buffer indices that AST nodes might refer to on the `ide` side &mdash; dunno) will likely require taking into account which EOL markers are used in the source file (`\r\n` or `\n` or `\r`), as well as the file's text encoding.
-  - _Positions_ (and thus, _ranges_) are (as received from the LSP client) passed by and returned to `lsp` using a UTF-16 encoding assumption. Since `ide` keeps track of live buffer contents (its consumers such as `lsp` just _providing_ them) and source file contents:
+  - _Positions_ (and thus, _ranges_) are (as received from the LSP client) passed by and returned to `lsp/gerbil` using a UTF-16 encoding assumption. Since `ide` keeps track of live buffer contents (its consumers such as `lsp/gerbil` just _providing_ them) and source file contents:
     - _positions_ and _ranges_ passed to `ide` are to be used with a [converted-to-UTF-16](https://cons.io/reference/std/text/utf16.html) version of the source file contents that `ide` has
     - _positions_ and _ranges_ received from `ide` are expected to be based on a [converted-to-UTF-16](https://cons.io/reference/std/text/utf16.html) version of the source file contents that `ide` has
     - if the above is unwanted as the default by `ide`, let's work out some parameterization / configurability options
@@ -76,7 +76,7 @@ A collection of `InfoItem`s on a given _location_ (that's a source file path and
   - `'num-octal` (format: `'scheme`)
   - `'num-decimal` (format: `'scheme`)
 
-Any other ideas for meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX? Just bring them into `ide` and let `lsp` and other `ide` users know about them,
+Any other ideas for meta-data / info-bites that are potentially truly handy-to-discover in an info-tip hover / description popup UX? Just bring them into `ide` and let `lsp/gerbil` and other `ide` users know about them,
 - but excluding the relational / referential infos readily obtainable via [lookup](#lookup) or [occurrences](#occurrences) calls
 - also excluding contextual "hints and tips" or code warnings / lints: it's covered by [diagnostics](#on-file-notices-changed)
 
