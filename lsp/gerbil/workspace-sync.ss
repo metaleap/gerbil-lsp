@@ -65,7 +65,7 @@
     (debugf "=== source files added: ~a" added))
   (unless (null? changed)
     (debugf "=== source files changed ~a" changed))
-  ; TODO: call `ide/on-source-file-changes`, see ../notes.md#1-workspace-syncing
+  ; TODO: call `ide/on-source-file-changes`, see ./README.md#1-workspace-syncing
   )
 
 
@@ -139,7 +139,7 @@
     (using (it params.textDocument :- VersionedTextDocumentIdentifier)
       (let (source-file-path (lsp-uri->file-path it.uri))
         (when (source-file-path? source-file-path)
-          ; TODO: call `ide/on-source-file-edited`, see ../notes.md#1-workspace-syncing
+          ; TODO: call `ide/on-source-file-edited`, see ./README.md#1-workspace-syncing
           (debugf "=== source file edited: ~a" source-file-path))))))
 
 

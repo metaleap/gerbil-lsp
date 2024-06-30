@@ -12,7 +12,7 @@
 (defmethod {textDocument-documentSymbol LspGerbil}
   (lambda (_ (params :- DocumentSymbolParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#defs-in-file
+      ; TODO: produce real results obtained from ./README.md#defs-in-file
       (let (sub (make-DocumentSymbol  name:           "SubSymbol"
                                       detail:         "a single child symbol"
                                       kind:           symbolkind-class
@@ -40,7 +40,7 @@
 
 (defmethod {workspace-symbol LspGerbil}
   (lambda (_ (params :- WorkspaceSymbolParams))
-    ; TODO: produce real results obtained from ../notes.md#defs-search
+    ; TODO: produce real results obtained from ./README.md#defs-search
     (if (null? source-file-paths)
         []
         [(make-WorkspaceSymbol  name: "Gerbil"
@@ -55,7 +55,7 @@
 (defmethod {textDocument-definition LspGerbil}
   (lambda (_ (params :- DefinitionParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#lookup
+      ; TODO: produce real results obtained from ./README.md#lookup
       [ (make-Location  uri:    source-file-path
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
@@ -67,7 +67,7 @@
 (defmethod {textDocument-references LspGerbil}
   (lambda (_ (params :- ReferenceParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#lookup
+      ; TODO: produce real results obtained from ./README.md#lookup
       [ (make-Location  uri:    source-file-path
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
@@ -79,7 +79,7 @@
 (defmethod {textDocument-documentHighlight LspGerbil}
   (lambda (_ (params :- DocumentHighlightParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#occurrences
+      ; TODO: produce real results obtained from ./README.md#occurrences
       [ (make-DocumentHighlight range:  (make-Range (make-Position 0 1)
                                                     (make-Position 0 4))
                                 kind:   documenthighlightkind-text)
@@ -91,7 +91,7 @@
 (defmethod {textDocument-completion LspGerbil}
   (lambda (_ (params :- CompletionParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#completions
+      ; TODO: produce real results obtained from ./README.md#completions
       (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                               source-file-path
                               (Position-line params.position)
@@ -109,7 +109,7 @@
 (defmethod {textDocument-hover LspGerbil}
   (lambda (_ (params :- HoverParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#info-items
+      ; TODO: produce real results obtained from ./README.md#info-items
       (let (content (format "**TODO:** call `ide/info-items` with `~a` and L~a,C~a."
                             source-file-path
                             (Position-line params.position)
@@ -122,7 +122,7 @@
 (defmethod {textDocument-prepareRename LspGerbil}
   (lambda (_ (params :- PrepareRenameParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#can-rename
+      ; TODO: produce real results obtained from ./README.md#can-rename
       (make-Range params.position
                   (make-Position  (Position-line params.position)
                                   (+ 4 (Position-character params.position)))))))
@@ -131,7 +131,7 @@
 (defmethod {textDocument-rename LspGerbil}
   (lambda (_ (params :- RenameParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#rename
+      ; TODO: produce real results obtained from ./README.md#rename
       (make-WorkspaceEdit
         changes: (hash (,(file-path->lsp-uri source-file-path) [
           (make-TextEdit  newText:  params.newName
@@ -148,7 +148,7 @@
 (defmethod {textDocument-signatureHelp LspGerbil}
   (lambda (_ (params :- SignatureHelpParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
-      ; TODO: produce real results obtained from ../notes.md#signatures
+      ; TODO: produce real results obtained from ./README.md#signatures
       (make-SignatureHelp
         signatures: (if (fx>0? (Position-line params.position)) [] [(make-SignatureInformation
           label:          "(foo bar baz)"
