@@ -20,10 +20,10 @@
 ; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#client_registerCapability
 (def (lsp-request-client-registerCapability! method register-options)
   (lsp-request! "client/registerCapability" (make-RegistrationParams
-                                          registrations: [(make-Registration
-                                                            id: (gensym)
-                                                            method: method
-                                                            registerOptions: register-options)])
+                                              registrations: [(make-Registration
+                                                                id: (gensym)
+                                                                method: method
+                                                                registerOptions: register-options)])
     #f))
 
 
