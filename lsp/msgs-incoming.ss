@@ -70,7 +70,7 @@
                                         (hash ("triggerCharacters" (LspHandlerOf-TextDocument-SignatureHelp-list-of-trigger-chars lsp-impl)))
                                         (void)))
                                   ("diagnosticProvider"
-                                    #f) ; keep false since we do "push diags" and don't support "pull diags"
+                                    (void)) ; keep it null, because we do "push diags" and don't support "pull diags"
                                   ("codeActionProvider"
                                     (is-LspHandlerOf-TextDocument-CodeAction? lsp-impl))
                                   ("executeCommandProvider"
