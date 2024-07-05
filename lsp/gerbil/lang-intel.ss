@@ -56,10 +56,10 @@
   (lambda (_ (params :- DefinitionParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
       ; TODO: produce real results obtained from ./README.md#lookup
-      [ (make-Location  uri:    source-file-path
+      [ (make-Location  uri:    (file-path->lsp-uri source-file-path)
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
-        (make-Location uri:   source-file-path
+        (make-Location uri:   (file-path->lsp-uri source-file-path)
                       range:  (make-Range (make-Position 2 1)
                                           (make-Position 2 4)))])))
 
@@ -68,10 +68,10 @@
   (lambda (_ (params :- ReferenceParams))
     (let (source-file-path (lsp-file->file-path params.textDocument))
       ; TODO: produce real results obtained from ./README.md#lookup
-      [ (make-Location  uri:    source-file-path
+      [ (make-Location  uri:    (file-path->lsp-uri source-file-path)
                         range:  (make-Range (make-Position 0 1)
                                             (make-Position 0 4)))
-        (make-Location  uri:    source-file-path
+        (make-Location  uri:    (file-path->lsp-uri source-file-path)
                         range:  (make-Range (make-Position 2 1)
                                             (make-Position 2 4)))])))
 
