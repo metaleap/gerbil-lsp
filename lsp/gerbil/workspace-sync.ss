@@ -148,7 +148,7 @@
     (using (it params.textDocument :- TextDocumentIdentifier)
       (let (source-file-path (lsp-uri->file-path it.uri))
         (when (source-file-path? source-file-path)
-          (lsp-notify-textDocument-publishDiagnostics! source-file-path [])
+          (lsp-notify-textDocument-publishDiagnostics! (file-path->lsp-uri source-file-path) [])
           (debugf "=== source file closed: ~a" source-file-path))))))
 
 
@@ -157,7 +157,7 @@
     (using (it params.textDocument :- TextDocumentItem)
       (let (source-file-path (lsp-uri->file-path it.uri))
         (when (source-file-path? source-file-path)
-          (lsp-notify-textDocument-publishDiagnostics! source-file-path [
+          (lsp-notify-textDocument-publishDiagnostics! (file-path->lsp-uri source-file-path) [
             (make-Diagnostic  range: (make-Range (make-Position 0 0) (make-Position 0 4))
                               severity: diagnosticseverity-information
                               code: 0001
