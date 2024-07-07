@@ -115,8 +115,8 @@
   final: #t)
 
 (def documenthighlightkind-text 1)
-(def documenthighlightkind-read 1)
-(def documenthighlightkind-write 1)
+(def documenthighlightkind-read 2)
+(def documenthighlightkind-write 3)
 
 
 (defclass (CompletionItemLabelDetails JSON)
